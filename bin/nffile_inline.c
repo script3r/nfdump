@@ -5,31 +5,31 @@
  *  Copyright (c) 2009, Peter Haag
  *  Copyright (c) 2004-2008, SWITCH - Teleinformatikdienste fuer Lehre und Forschung
  *  All rights reserved.
- *  
- *  Redistribution and use in source and binary forms, with or without 
+ *
+ *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions are met:
- *  
- *   * Redistributions of source code must retain the above copyright notice, 
+ *
+ *   * Redistributions of source code must retain the above copyright notice,
  *     this list of conditions and the following disclaimer.
- *   * Redistributions in binary form must reproduce the above copyright notice, 
- *     this list of conditions and the following disclaimer in the documentation 
+ *   * Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
  *     and/or other materials provided with the distribution.
- *   * Neither the name of the author nor the names of its contributors may be 
- *     used to endorse or promote products derived from this software without 
+ *   * Neither the name of the author nor the names of its contributors may be
+ *     used to endorse or promote products derived from this software without
  *     specific prior written permission.
- *  
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
- *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
- *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
- *  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE 
- *  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
- *  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
- *  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
- *  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
- *  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
- *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ *  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *  POSSIBILITY OF SUCH DAMAGE.
- *  
+ *
  */
 
 static inline int CheckBufferSpace(nffile_t *nffile, size_t required);
@@ -61,7 +61,7 @@ static inline int CheckBufferSpace(nffile_t *nffile, size_t required) {
 		if ( WriteBlock(nffile) <= 0 ) {
 			LogError("Failed to write output buffer to disk: '%s'" , strerror(errno));
 			return 0;
-		} 
+		}
 	}
 
 	return 1;
@@ -94,7 +94,7 @@ common_record_v0_t *flow_record_v0 = (common_record_v0_t *)record;
 /*
  * Expand file record into master record for further processing
  * LP64 CPUs need special 32bit operations as it is not guarateed, that 64bit
- * values are aligned 
+ * values are aligned
  */
 static inline void ExpandRecord_v2(common_record_t *input_record, extension_info_t *extension_info, exporter_info_record_t *exporter_info, master_record_t *output_record ) {
 extension_map_t *extension_map = extension_info->map;
@@ -135,10 +135,10 @@ void		*p = (void *)input_record;
 	if ( (input_record->flags & FLAG_IPV6_ADDR) != 0 )	{ // IPv6
 		// IPv6
 		// keep compiler happy
-		// memcpy((void *)output_record->V6.srcaddr, p, 4 * sizeof(uint64_t));	
-		memcpy((void *)output_record->ip_union._ip_64.addr, p, 4 * sizeof(uint64_t));	
+		// memcpy((void *)output_record->V6.srcaddr, p, 4 * sizeof(uint64_t));
+		memcpy((void *)output_record->ip_union._ip_64.addr, p, 4 * sizeof(uint64_t));
 		p = (void *)((pointer_addr_t)p + 4 * sizeof(uint64_t));
-	} else { 	
+	} else {
 		// IPv4
 		u = (uint32_t *)p;
 		output_record->V6.srcaddr[0] = 0;
@@ -152,28 +152,28 @@ void		*p = (void *)input_record;
 	}
 
 	// Required extension 2 - packet counter
-	if ( (input_record->flags & FLAG_PKG_64 ) != 0 ) { 
+	if ( (input_record->flags & FLAG_PKG_64 ) != 0 ) {
 		// 64bit packet counter
 		value64_t	l, *v = (value64_t *)p;
 		l.val.val32[0] = v->val.val32[0];
 		l.val.val32[1] = v->val.val32[1];
 		output_record->dPkts = l.val.val64;
 		p = (void *)((pointer_addr_t)p + sizeof(uint64_t));
-	} else {	
+	} else {
 		// 32bit packet counter
 		output_record->dPkts = *((uint32_t *)p);
 		p = (void *)((pointer_addr_t)p + sizeof(uint32_t));
 	}
 
 	// Required extension 3 - byte counter
-	if ( (input_record->flags & FLAG_BYTES_64 ) != 0 ) { 
+	if ( (input_record->flags & FLAG_BYTES_64 ) != 0 ) {
 		// 64bit byte counter
 		value64_t	l, *v = (value64_t *)p;
 		l.val.val32[0] = v->val.val32[0];
 		l.val.val32[1] = v->val.val32[1];
 		output_record->dOctets = l.val.val64;
 		p = (void *)((pointer_addr_t)p + sizeof(uint64_t));
-	} else {	
+	} else {
 		// 32bit bytes counter
 		output_record->dOctets = *((uint32_t *)p);
 		p = (void *)((pointer_addr_t)p + sizeof(uint32_t));
@@ -362,6 +362,12 @@ void		*p = (void *)input_record;
 				output_record->received = v.val.val64;
 				p = (void *)tpl->data;
 			} break;
+			case EX_PAN_USERID: {
+				tpl_ext_50_t *tpl = (tpl_ext_50_t *)p;
+				strncpy((void *)output_record->userid, (void *)tpl->userid, sizeof(output_record->userid));
+				output_record->userid[sizeof(output_record->userid)-1] = '\0';
+				p = (void *)tpl->data;
+			} break;
 #ifdef NSEL
 			case EX_NSEL_COMMON: {
 				tpl_ext_37_t *tpl = (tpl_ext_37_t *)p;
@@ -462,15 +468,15 @@ void		*p = (void *)input_record;
 				output_record->block_end = tpl->block_end;
 				output_record->block_step = tpl->block_step;
 				output_record->block_size = tpl->block_size;
-				if ( output_record->block_end == 0 && output_record->block_size != 0 ) 
+				if ( output_record->block_end == 0 && output_record->block_size != 0 )
 					output_record->block_end = output_record->block_start + output_record->block_size - 1;
 				p = (void *)tpl->data;
 			} break;
-			
+
 #endif
 		}
 	}
-	
+
 } // End of ExpandRecord_v2
 
 #ifdef NEED_PACKRECORD
@@ -523,10 +529,10 @@ int		i;
 	if ( (master_record->flags & FLAG_IPV6_ADDR) != 0 )	{ // IPv6
 		// IPv6
 		// keep compiler happy
-		// memcpy(p, (void *)master_record->V6.srcaddr, 4 * sizeof(uint64_t));	
-		memcpy(p, (void *)master_record->ip_union._ip_64.addr, 4 * sizeof(uint64_t));	
+		// memcpy(p, (void *)master_record->V6.srcaddr, 4 * sizeof(uint64_t));
+		memcpy(p, (void *)master_record->ip_union._ip_64.addr, 4 * sizeof(uint64_t));
 		p = (void *)((pointer_addr_t)p + 4 * sizeof(uint64_t));
-	} else { 	
+	} else {
 		// IPv4
 		uint32_t *u = (uint32_t *)p;
 		u[0] = master_record->V4.srcaddr;
@@ -535,28 +541,28 @@ int		i;
 	}
 
 	// Required extension 2 - packet counter
-	if ( (master_record->flags & FLAG_PKG_64 ) != 0 ) { 
+	if ( (master_record->flags & FLAG_PKG_64 ) != 0 ) {
 		// 64bit packet counter
 		value64_t	l, *v = (value64_t *)p;
 		l.val.val64 = master_record->dPkts;
 		v->val.val32[0] = l.val.val32[0];
 		v->val.val32[1] = l.val.val32[1];
 		p = (void *)((pointer_addr_t)p + sizeof(uint64_t));
-	} else {	
+	} else {
 		// 32bit packet counter
 		*((uint32_t *)p) = master_record->dPkts;
 		p = (void *)((pointer_addr_t)p + sizeof(uint32_t));
 	}
 
 	// Required extension 3 - byte counter
-	if ( (master_record->flags & FLAG_BYTES_64 ) != 0 ) { 
+	if ( (master_record->flags & FLAG_BYTES_64 ) != 0 ) {
 		// 64bit byte counter
 		value64_t	l, *v = (value64_t *)p;
 		l.val.val64 = master_record->dOctets;
 		v->val.val32[0] = l.val.val32[0];
 		v->val.val32[1] = l.val.val32[1];
 		p = (void *)((pointer_addr_t)p + sizeof(uint64_t));
-	} else {	
+	} else {
 		// 32bit bytes counter
 		*((uint32_t *)p) = master_record->dOctets;
 		p = (void *)((pointer_addr_t)p + sizeof(uint32_t));
@@ -801,7 +807,7 @@ int		i;
 	nffile->block_header->NumRecords++;
 #ifdef DEVEL
 	if ( ((pointer_addr_t)p - (pointer_addr_t)nffile->buff_ptr) != required ) {
-		fprintf(stderr, "Packrecord: size missmatch: required: %i, written: %li!\n", 
+		fprintf(stderr, "Packrecord: size missmatch: required: %i, written: %li!\n",
 			required, (long)((ptrdiff_t)p - (ptrdiff_t)nffile->buff_ptr));
 		exit(255);
 	}
