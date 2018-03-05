@@ -4,31 +4,31 @@
  *  Copyright (c) 2009, Peter Haag
  *  Copyright (c) 2008, SWITCH - Teleinformatikdienste fuer Lehre und Forschung
  *  All rights reserved.
- *  
- *  Redistribution and use in source and binary forms, with or without 
+ *
+ *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions are met:
- *  
- *   * Redistributions of source code must retain the above copyright notice, 
+ *
+ *   * Redistributions of source code must retain the above copyright notice,
  *     this list of conditions and the following disclaimer.
- *   * Redistributions in binary form must reproduce the above copyright notice, 
- *     this list of conditions and the following disclaimer in the documentation 
+ *   * Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
  *     and/or other materials provided with the distribution.
- *   * Neither the name of the author nor the names of its contributors may be 
- *     used to endorse or promote products derived from this software without 
+ *   * Neither the name of the author nor the names of its contributors may be
+ *     used to endorse or promote products derived from this software without
  *     specific prior written permission.
- *  
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
- *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
- *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
- *  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE 
- *  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
- *  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
- *  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
- *  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
- *  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
- *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ *  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *  POSSIBILITY OF SUCH DAMAGE.
- *  
+ *
  */
 
 #ifndef _NFFILE_H
@@ -51,8 +51,8 @@
 
 #define NF_DUMPFILE         "nfcapd.current"
 
-/* 
- * output buffer max size, before writing data to the file 
+/*
+ * output buffer max size, before writing data to the file
  * used to cache flows before writing to disk. size: tradeoff between
  * size and time to flush to disk. Do not delay collector with long I/O
  */
@@ -75,7 +75,7 @@
  * nfdump binary file layout
  * =========================
  * Each data file starts with a file header, which identifies the file as an nfdump data file.
- * The magic 16bit integer at the beginning of each file must read 0xA50C. This also guarantees 
+ * The magic 16bit integer at the beginning of each file must read 0xA50C. This also guarantees
  * that endian dependant files are read correct.
  *
  * Principal layout, recognized as LAYOUT_VERSION_1:
@@ -97,11 +97,11 @@ typedef struct file_header_s {
 	uint16_t	version;			// version of binary file layout, incl. magic
 #define LAYOUT_VERSION_1	1
 
-	uint32_t	flags;				
+	uint32_t	flags;
 #define NUM_FLAGS		4
 #define FLAG_NOT_COMPRESSED	0x0		// records are not compressed
 #define FLAG_LZO_COMPRESSED	0x1		// records are LZO compressed
-#define FLAG_ANONYMIZED 	0x2		// flow data are anonimized 
+#define FLAG_ANONYMIZED 	0x2		// flow data are anonimized
 #define FLAG_CATALOG		0x4		// has a file catalog record after stat record
 #define FLAG_BZ2_COMPRESSED 0x8		// records are BZ2 compressed
 #define FLAG_LZ4_COMPRESSED 0x10	// records are LZ4 compressed
@@ -117,14 +117,14 @@ typedef struct file_header_s {
 #define BLOCK_IS_COMPRESSED(n) ((n)->flags == 2 )
 #define IP_ANONYMIZED(n) ((n)->file_header->flags & FLAG_ANONYMIZED)
 
-							
+
 	uint32_t	NumBlocks;			// number of data blocks in file
 	char		ident[IDENTLEN];	// string identifier for this file
 } file_header_t;
 
-/* 
- * Compatible with nfdump x.x.x file format: After the file header an 
- * inplicit stat record follows, which contains the statistics 
+/*
+ * Compatible with nfdump x.x.x file format: After the file header an
+ * inplicit stat record follows, which contains the statistics
  * information about all netflow records in this file.
  */
 
@@ -198,7 +198,7 @@ typedef struct data_block_header_s {
  * same block header as type 2. Used for data other than flow data - e.g. histograms. Important difference:
  * included data records have type L_record_header_t headers in order to allow larger data records.
  *
- */ 
+ */
 
 #define Large_BLOCK_Type	3
 
@@ -215,7 +215,7 @@ typedef struct L_record_header_s {
  * introduces a file catalog for nfdump files. Not yet really used in nfdump-1.6.x
  * The catalog will get implemented later - most likely 1.7
  * The flag FLAG_CATALOG is used to flag the file for having a catalog
- * 
+ *
  */
 
 #define CATALOG_BLOCK	4
@@ -246,7 +246,7 @@ typedef struct catalog_s {
 typedef struct nffile_s {
 	file_header_t		*file_header;	// file header
 #define NUM_BUFFS 2
-	void				*buff_pool[NUM_BUFFS];	// buffer space for read/write/compression 
+	void				*buff_pool[NUM_BUFFS];	// buffer space for read/write/compression
 	size_t				buff_size;
 	data_block_header_t	*block_header;	// buffer ptr
 	void				*buff_ptr;		// pointer into buffer for read/write blocks/records
@@ -254,17 +254,17 @@ typedef struct nffile_s {
 	int					fd;				// file descriptor
 } nffile_t;
 
-/* 
+/*
  * The new block type 2 introduces a changed common record and multiple extension records. This allows a more flexible data
  * storage of netflow v9 records and 3rd party extension to nfdump.
- * 
+ *
  * A block type 2 may contain different record types, as described below.
- * 
+ *
  * Record description:
  * -------------------
  * A record always starts with a 16bit record id followed by a 16bit record size. This record size is the full size of this
- * record incl. record type and size fields and all record extensions. 
- * 
+ * record incl. record type and size fields and all record extensions.
+ *
  * Know record types:
  * Type 0: reserved
  * Type 1: Common netflow record incl. all record extensions
@@ -291,34 +291,34 @@ typedef struct nffile_s {
 // requires moderate changes till 1.7
 #define CommonRecordType	10
 
- /* 
+ /*
  * All records are 32bit aligned and layouted in a 64bit array. The numbers placed in () refer to the netflow v9 type id.
  *
  * Record type 1
  * =============
  * The record type 1 describes a netflow data record incl. all optional extensions for this record.
- * A netflow data record requires at least the first 3 extensions 1..3. All other extensions are optional 
- * and described in the extensiion map. The common record contains a reference to the extension map which 
+ * A netflow data record requires at least the first 3 extensions 1..3. All other extensions are optional
+ * and described in the extensiion map. The common record contains a reference to the extension map which
  * applies for this record.
  *
  * flags:
  * bit  0:	0: IPv4				 1: IPv6
  * bit  1:	0: 32bit dPkts		 1: 64bit dPkts
- * bit  2:	0: 32bit dOctets	 1: 64bit dOctets 
+ * bit  2:	0: 32bit dOctets	 1: 64bit dOctets
  * bit  3:  0: IPv4 next hop     1: IPv6 next hop
  * bit  4:  0: IPv4 BGP next hop 1: BGP IPv6 next hop
  * bit  5:  0: IPv4 exporter IP  1: IPv6 exporter IP
  * bit  6:  0: flow              1: event
  * bit  7:  0: unsampled         1: sampled flow - sampling applied
- * 
+ *
  * Required extensions: 1,2,3
  * ------------------------------
  * A netflow record consists at least of a common record ( extension 0 ) and 3  required extension:
- * 
+ *
  * Extension 1: IPv4 or IPv4 src and dst addresses	Flags bit 0: 0: IPv4,  1: IPv6
  * Extension 2: 32 or 64 bit packet counter         Flags bit 1: 0: 32bit, 1: 64bit
  * Extension 3: 32 or 64 bit byte counter           Flags bit 2: 0: 32bit, 1: 64bit
- * 
+ *
  * Commmon record - extension 0
  * +----+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
  * |  - |       0      |      1       |      2       |      3       |      4       |      5       |      6       |      7       |
@@ -333,7 +333,7 @@ typedef struct nffile_s {
  * +----+--------------+--------------+--------------+--------------+
  *
  * Commmon record - extension 0 - Type 10
- * required for larger exporter ID reference 
+ * required for larger exporter ID reference
  * +----+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
  * |  - |       0      |      1       |      2       |      3       |      4       |      5       |      6       |      7       |
  * +----+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
@@ -346,7 +346,7 @@ typedef struct nffile_s {
  * |  3 |           srcport (7)       |   dstport(11)/ICMP (32)     |          exporter ID        |  reserved icmp type/code    |
  * +----+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
 
- * 
+ *
  */
 
 #define COMMON_BLOCK_ID 0
@@ -384,7 +384,7 @@ typedef struct common_record_s {
  	uint16_t	msec_last;
  	uint32_t	first;
  	uint32_t	last;
- 
+
  	uint8_t		fwd_status;
  	uint8_t		tcp_flags;
  	uint8_t		prot;
@@ -414,7 +414,7 @@ typedef struct common_record_v0_s {
  	uint16_t	msec_last;
  	uint32_t	first;
  	uint32_t	last;
- 
+
  	uint8_t		fwd_status;
  	uint8_t		tcp_flags;
  	uint8_t		prot;
@@ -431,23 +431,23 @@ typedef struct common_record_v0_s {
 
 #define COMMON_BLOCK	0
 
- /* 
+ /*
  * Required extensions:
  * --------------------
- * Extension 1: 
+ * Extension 1:
  * IPv4/v6 address type
  *                IP version: IPv4
  *                |
- * Flags: xxxx xxx0	
+ * Flags: xxxx xxx0
  * IPv4:
  * +----+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
  * |  0 |                           srcip (8)                       |                           dstip (12)                      |
  * +----+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
- * 
+ *
  * IPv6:
  *                IP version: IPv6
  *                |
- * Flags: xxxx xxx1	
+ * Flags: xxxx xxx1
  * +----+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
  * |  0 |                                                         srcip (27)                                                    |
  * +----+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
@@ -457,7 +457,7 @@ typedef struct common_record_v0_s {
  * +----+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
  * |  3 |                                                         dstip (28)                                                    |
  * +----+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
- * 
+ *
  */
 
 #define EX_IPv4v6	1
@@ -496,23 +496,23 @@ typedef struct ip_addr_s {
 #define V6 ip_union._v6
 
  /*
- * Extension 2: 
+ * Extension 2:
  * In packet counter size
- * 
+ *
  *               In packet counter size 4byte
  *               |
- * Flags: xxxx xx0x	
+ * Flags: xxxx xx0x
  * +---++--------------+--------------+--------------+--------------+
  * |  0 |                         in pkts (2)                       |
  * +---++--------------+--------------+--------------+--------------+
- * 
+ *
  *               In packet counter size 8byte
  *               |
- * Flags: xxxx xx1x	
+ * Flags: xxxx xx1x
  * +---++--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
  * |  0 |                                                       in pkts (2)                                                     |
  * +---++--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
- * 
+ *
  */
 
 #define EX_PACKET_4_8	2
@@ -531,19 +531,19 @@ typedef struct value64_s {
 } value64_t;
 
 
- /* Extension 3: 
+ /* Extension 3:
  * in byte counter size
  *              In byte counter size 4byte
  *              |
- * Flags: xxxx x0xx	
- * 
+ * Flags: xxxx x0xx
+ *
  * +---++--------------+--------------+--------------+--------------+
  * |  0 |                        in bytes (1)                       |
  * +---++--------------+--------------+--------------+--------------+
- * 
+ *
  *              In byte counter size 8byte
  *              |
- * Flags: xxxx x1xx	
+ * Flags: xxxx x1xx
  * +---++--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
  * |  0 |                                                        in bytes (1)                                                   |
  * +---++--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
@@ -551,15 +551,15 @@ typedef struct value64_s {
 
 #define EX_BYTE_4_8	3
 
-/* 
- * 
+/*
+ *
  * Optional extension:
  * ===================
- * 
+ *
  * Interface record
  * ----------------
  * Interface records are optional and accepted as either 2 or 4 bytes numbers
- * Extension 4: 
+ * Extension 4:
  * +---++--------------+--------------+--------------+--------------+
  * |  0 |            input (10)       |            output (14)      |
  * +---++--------------+--------------+--------------+--------------+
@@ -572,7 +572,7 @@ typedef struct tpl_ext_4_s {
 } tpl_ext_4_t;
 
 /*
- * Extension 5: 
+ * Extension 5:
  * +---++--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
  * |  0 |                           input (10)                      |                           output (14)                     |
  * +---++--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
@@ -586,11 +586,11 @@ typedef struct tpl_ext_5_s {
 } tpl_ext_5_t;
 
 
-/* 
+/*
  * AS record
  * ---------
  * AS records are optional and accepted as either 2 or 4 bytes numbers
- * Extension 6: 
+ * Extension 6:
  * +---++--------------+--------------+--------------+--------------+
  * |  0 |            src as (16)      |            dst as (17)      |
  * +---++--------------+--------------+--------------+--------------+
@@ -603,7 +603,7 @@ typedef struct tpl_ext_6_s {
 } tpl_ext_6_t;
 
 /*
- * Extension 7: 
+ * Extension 7:
  * +---++--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
  * |  0 |                         src as (16)                       |                          dst as (17)                      |
  * +---++--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
@@ -623,7 +623,7 @@ typedef struct tpl_ext_7_s {
  * These 4 different fields are grouped together in a 32bit value.
  * Extension 8:
  * +---++--------------+--------------+--------------+--------------+
- * |  3 |  dst tos(55) |   dir(61)    | srcmask(9,29)|dstmask(13,30)|  
+ * |  3 |  dst tos(55) |   dir(61)    | srcmask(9,29)|dstmask(13,30)|
  * +---++--------------+--------------+--------------+--------------+
  */
 #define EX_MULIPLE	8
@@ -640,14 +640,14 @@ typedef struct tpl_ext_8_s {
 	uint8_t	data[4];	// points to further data
 } tpl_ext_8_t;
 
-/* 
+/*
  * IP next hop
  * -------------
  * IPv4:
  * Extension 9:
  *             IP version: IPv6
  *             |
- * Flags: xxxx 0xxx	
+ * Flags: xxxx 0xxx
  * +----+--------------+--------------+--------------+--------------+
  * |  0 |                       next hop ip (15)                    |
  * +----+--------------+--------------+--------------+--------------+
@@ -663,7 +663,7 @@ typedef struct tpl_ext_9_s {
  * Extension 10:
  *             IP version: IPv6
  *             |
- * Flags: xxxx 1xxx	
+ * Flags: xxxx 1xxx
  * +----+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
  * |  0 |                                                     next hop ip (62)                                                  |
  * +----+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
@@ -685,7 +685,7 @@ typedef struct tpl_ext_10_s {
  * Extension 11:
  *           IP version: IPv6
  *           |
- * Flags: xxx0 xxxx	
+ * Flags: xxx0 xxxx
  * +----+--------------+--------------+--------------+--------------+
  * |  0 |                       bgp next ip (18)                    |
  * +----+--------------+--------------+--------------+--------------+
@@ -701,7 +701,7 @@ typedef struct tpl_ext_11_s {
  * Extension 12:
  *           IP version: IPv6
  *           |
- * Flags: xxx1 xxxx	
+ * Flags: xxx1 xxxx
  * +----+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
  * |  0 |                                                     bgp next ip (63)                                                  |
  * +----+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
@@ -718,7 +718,7 @@ typedef struct tpl_ext_12_s {
 /*
  * VLAN record
  * -----------
- * Extension 13: 
+ * Extension 13:
  * +----+--------------+--------------+--------------+--------------+
  * |  0 |           src vlan(58)      |          dst vlan (59)      |
  * +----+--------------+--------------+--------------+--------------+
@@ -731,11 +731,11 @@ typedef struct tpl_ext_13_s {
 } tpl_ext_13_t;
 
 
-/* 
+/*
  * Out packet counter size
  * ------------------------
  * 4 byte
- * Extension 14: 
+ * Extension 14:
  * +----+--------------+--------------+--------------+--------------+
  * |  0 |                        out pkts (24)                      |
  * +----+--------------+--------------+--------------+--------------+
@@ -748,7 +748,7 @@ typedef struct tpl_ext_14_s {
 
 /*
  * 4 byte
- * Extension 15: 
+ * Extension 15:
  * +----+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
  * |  0 |                                                      out pkts (24)                                                    |
  * +----+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
@@ -764,11 +764,11 @@ typedef struct tpl_ext_15_s {
 } tpl_ext_15_t;
 
 
-/* 
+/*
  * Out byte counter size
  * ---------------------
  * 4 byte
- * Extension 16: 
+ * Extension 16:
  * +----+--------------+--------------+--------------+--------------+
  * |  0 |                        out bytes (23)                     |
  * +----+--------------+--------------+--------------+--------------+
@@ -796,11 +796,11 @@ typedef struct tpl_ext_17_s {
 	uint8_t		data[4];	// points to further data
 } tpl_ext_17_t;
 
-/* 
+/*
  * Aggr flows
  * ----------
  * 4 byte
- * Extension 18: 
+ * Extension 18:
  * +----+--------------+--------------+--------------+--------------+
  * |  0 |                        aggr flows (3)                     |
  * +----+--------------+--------------+--------------+--------------+
@@ -836,7 +836,7 @@ typedef struct tpl_ext_19_s {
  * |  1 |              0              |                                     out dst mac (57)                                    |
  * +----+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
  */
-#define EX_MAC_1 20	
+#define EX_MAC_1 20
 typedef struct tpl_ext_20_s {
 	union {
 		uint64_t	in_src_mac;
@@ -857,7 +857,7 @@ typedef struct tpl_ext_20_s {
  * |  1 |              0              |                                     out src mac (81)                                    |
  * +----+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
  */
-#define EX_MAC_2 21	
+#define EX_MAC_2 21
 typedef struct tpl_ext_21_s {
 	union {
 		uint64_t	in_dst_mac;
@@ -884,20 +884,20 @@ typedef struct tpl_ext_21_s {
  * |  3 |      0       |             MPLS_LABEL_10 (79)             |       0      |              MPLS_LABEL_9 (78)             |
  * +----+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
  */
-#define EX_MPLS 22	
+#define EX_MPLS 22
 typedef struct tpl_ext_22_s {
 	uint32_t	mpls_label[10];
 	uint8_t		data[4];	// points to further data
 } tpl_ext_22_t;
 
-/* 
+/*
  * Sending router IP
  * -----------------
  * IPv4:
  * Extension 23:
  *          IP version: IPv6
  *          |
- * Flags: xx0x xxxx	
+ * Flags: xx0x xxxx
  * +----+--------------+--------------+--------------+--------------+
  * |  0 |                       router ipv4 ()                      |
  * +----+--------------+--------------+--------------+--------------+
@@ -913,7 +913,7 @@ typedef struct tpl_ext_23_s {
  * Extension 24:
  *          IP version: IPv6
  *          |
- * Flags: xx1x xxxx	
+ * Flags: xx1x xxxx
  * +----+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
  * |  0 |                                                     router ip v6 ()                                                   |
  * +----+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
@@ -927,10 +927,10 @@ typedef struct tpl_ext_24_s {
 	uint8_t		data[4];	// points to further data
 } tpl_ext_24_t;
 
-/* 
+/*
  * router source ID
  * ----------------
- * For v5 netflow, it's engine type/engine ID 
+ * For v5 netflow, it's engine type/engine ID
  * for v9 it's the source_id
  * Extension 25:
  * +----+--------------+--------------+--------------+--------------+
@@ -1130,7 +1130,7 @@ typedef struct tpl_ext_43_s {
  */
 
 /*
- * latency extension 
+ * latency extension
  * +----+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
  * |  0 |                                           client_nw_delay_usec (57554/57554)                                          |
  * +----+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
@@ -1166,7 +1166,7 @@ typedef struct tpl_ext_46_s {
 } tpl_ext_46_t;
 
 #define EX_NEL_GLOBAL_IP_v4	47
-/* 
+/*
  * no longer used. Mapped to NSEL extension EX_NSEL_XLATE_IP_v4
  */
 typedef struct tpl_ext_47_s {
@@ -1192,16 +1192,21 @@ typedef struct tpl_ext_48_s {
 
 #define EX_NEL_RESERVED_1	49
 
+#define EX_PAN_USERID    50
+typedef struct tpl_ext_50_s {
+        char            userid[64];
+        uint8_t         data[4];        // points to further data
+} tpl_ext_50_t;
 
-/* 
- * 
- * 
+/*
+ *
+ *
  * V1 Extension map:
  * =================
  * The extension map replaces the individual flags in v1 layout. With many possible extensions and combination of extensions
  * an extension map is more efficient and flexible while reading and decoding the record.
  * In current version of nfdump, up to 65535 individual extension maps are supported, which is considered to be enough.
- * 
+ *
  * For each available extension record, the ids are recorded in the extension map in the order they appear.
  * +----+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
  * |  - |	     0     |      1       |      2       |      3       |      4       |      5       |      6       |      7       |
@@ -1236,27 +1241,27 @@ typedef struct extension_map_s {
 } extension_map_t;
 
 
-/* 
- * 
- * 
+/*
+ *
+ *
  * V2 Extension map:
  * =================
  * The V2 extension map replaces the V1 extension map. The basic extension architecture remains the same. V2 extensions
- * adds extra information about the extension such as size and offset within the packed record. This allows more 
+ * adds extra information about the extension such as size and offset within the packed record. This allows more
  * flexibility by using flexible length extensions up to the extension defined maximum. With the introduction of V2
  * extension maps, the old master_record will become obsolete in near future.
  * Implementation wise: if extension size is set to 0 - the first 2 bytes of the extension data contains the size of
  * the extension. Extensions with flexible size must only appended at the end of the record block.
- * 
+ *
  * For each available extension record, the ids are recorded in the extension map in the order they appear.
  * +----+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
  * |  - |	     0     |      1       |      2       |      3       |      4       |      5       |      6       |      7       |
  * +----+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
  * |  0 |       record type == 10     |             size            |            map id           |      max extension size     |
  * +----+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
- * |  1 |       extension id 1        |   offset extension id 1     |        extension id 2       |    offset extension id 2    | 
+ * |  1 |       extension id 1        |   offset extension id 1     |        extension id 2       |    offset extension id 2    |
  * +----+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
- * |  1 |       extension id 3        |   offset extension id 3     |        extension id 4       |    offset extension id 4    | 
+ * |  1 |       extension id 3        |   offset extension id 3     |        extension id 4       |    offset extension id 4    |
  * +----+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
  * ...
  * +----+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
@@ -1293,7 +1298,7 @@ typedef struct extension_map17_s {
 
 /*
  * nfcapd writes an info stat record for each new exporter
- * 
+ *
  * +----+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
  * |  - |	     0     |      1       |      2       |      3       |      4       |      5       |      6       |      7       |
  * +----+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
@@ -1303,7 +1308,7 @@ typedef struct extension_map17_s {
  * +----+--------------+--------------+--------------+----------  ip   ------------+--------------+--------------+--------------+
  * |  2 |                                                                                                                       |
  * +----+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
- * |  3 |          sa_family          |            sysid            |                             id                            |      
+ * |  3 |          sa_family          |            sysid            |                             id                            |
  * +----+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
  */
 typedef struct exporter_info_record_s {
@@ -1327,7 +1332,7 @@ typedef struct exporter_info_record_s {
 
 /*
  * nfcapd writes a stat record at the end of the file which contains the exporter statistics.
- * 
+ *
  * +----+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
  * |  - |	     0     |      1       |      2       |      3       |      4       |      5       |      6       |      7       |
  * +----+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
@@ -1345,8 +1350,8 @@ typedef struct exporter_info_record_s {
 typedef struct exporter_stats_record_s {
 	record_header_t	header;
 
-	uint32_t	stat_count;		// number of stat records 
-	
+	uint32_t	stat_count;		// number of stat records
+
 	struct exporter_stat_s {
 		uint32_t	sysid;				// identifies the exporter
 		uint32_t	sequence_failure;	// number of sequence failues
@@ -1359,7 +1364,7 @@ typedef struct exporter_stats_record_s {
 
 /*
  * nfcapd writes a sampler record for each new sampler announced
- * 
+ *
  * +----+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
  * |  - |	     0     |      1       |      2       |      3       |      4       |      5       |      6       |      7       |
  * +----+--------------+--------------+--------------+--------------+--------------+--------------+--------------+--------------+
@@ -1388,7 +1393,7 @@ typedef struct exporter_record_s {
 	record_header_t	header;
 
 	// exporter data
-	uint32_t 	version;		// make sure it's a version 9 exporter 
+	uint32_t 	version;		// make sure it's a version 9 exporter
 
 	// IP address
 	uint32_t	sa_family;
@@ -1496,7 +1501,7 @@ typedef struct master_record_s {
 			uint8_t		icmp_code;	// index 3  0x0000'0000'0000'00ff
 #else
 			// little endian confusion ...
-			uint8_t		icmp_code;	
+			uint8_t		icmp_code;
 			uint8_t		icmp_type;
 #endif
 		};
@@ -1510,7 +1515,7 @@ typedef struct master_record_s {
 #	define ShiftSrcPort			48
 
 #	define MaskDstPort			0x0000ffff00000000LL
-#	define ShiftDstPort 		32	
+#	define ShiftDstPort 		32
 
 #	define MaskExporterSysID  	0x00000000ffff0000LL
 #	define ShiftExporterSysID 	16
@@ -1575,8 +1580,8 @@ typedef struct master_record_s {
 #endif
 
 
-	// IP address block 
-	union {						
+	// IP address block
+	union {
 		struct _ipv4_s {
 #ifdef WORDS_BIGENDIAN
 			uint32_t	fill1[3];	// <empty>		index 6	0xffff'ffff'ffff'ffff
@@ -1593,7 +1598,7 @@ typedef struct master_record_s {
 			uint32_t	dstaddr;	// dstaddr      index 9 0xffff'ffff'0000'0000
 			uint32_t	fill4;		// <empty>		index 9 0xffff'ffff'0000'0000
 #endif
-		} _v4;	
+		} _v4;
 		struct _ipv6_s {
 			uint64_t	srcaddr[2];	// srcaddr[0-1] index 6 0xffff'ffff'ffff'ffff
 									// srcaddr[2-3] index 7 0xffff'ffff'ffff'ffff
@@ -1612,7 +1617,7 @@ typedef struct master_record_s {
 
 #	define OffsetDstIPv4 		9
 #	define MaskDstIPv4  		0x00000000ffffffffLL
-#	define ShiftDstIPv4  		0	
+#	define ShiftDstIPv4  		0
 
 #	define OffsetSrcIPv6a 		6
 #	define OffsetSrcIPv6b 		7
@@ -1656,7 +1661,7 @@ typedef struct master_record_s {
 								// ipv6	  index 13 0xffff'ffff'ffff'ffff
 
 #ifdef WORDS_BIGENDIAN
-#	define OffsetNexthopv4 		13	
+#	define OffsetNexthopv4 		13
 #	define MaskNexthopv4  		0x00000000ffffffffLL
 #	define ShiftNexthopv4 		0
 
@@ -1665,7 +1670,7 @@ typedef struct master_record_s {
 // MaskIPv6 and ShiftIPv6 already defined
 
 #else
-#	define OffsetNexthopv4 		13	
+#	define OffsetNexthopv4 		13
 #	define MaskNexthopv4  		0xffffffff00000000LL
 #	define ShiftNexthopv4 		0
 
@@ -1679,7 +1684,7 @@ typedef struct master_record_s {
 								// ipv6	  index 15 0xffff'ffff'ffff'ffff
 
 #ifdef WORDS_BIGENDIAN
-#	define OffsetBGPNexthopv4 	15	
+#	define OffsetBGPNexthopv4 	15
 #	define MaskBGPNexthopv4  	0x00000000ffffffffLL
 #	define ShiftBGPNexthopv4 	0
 
@@ -1688,7 +1693,7 @@ typedef struct master_record_s {
 // MaskIPv6 and ShiftIPv6 already defined
 
 #else
-#	define OffsetBGPNexthopv4 	15	
+#	define OffsetBGPNexthopv4 	15
 #	define MaskBGPNexthopv4  	0xffffffff00000000LL
 #	define ShiftBGPNexthopv4 	0
 
@@ -1727,7 +1732,7 @@ typedef struct master_record_s {
 #	define MaskDstMask			0x000000ff00000000LL
 #	define ShiftDstMask 		32
 
-#	define OffsetVlan 			16	
+#	define OffsetVlan 			16
 #	define MaskSrcVlan  		0x00000000ffff0000LL
 #	define ShiftSrcVlan 		16
 
@@ -1750,7 +1755,7 @@ typedef struct master_record_s {
 #	define MaskDstMask			0x00000000ff000000LL
 #	define ShiftDstMask 		24
 
-#	define OffsetVlan 			16	
+#	define OffsetVlan 			16
 #	define MaskSrcVlan  		0x0000ffff00000000LL
 #	define ShiftSrcVlan 		32
 
@@ -1885,7 +1890,7 @@ typedef struct master_record_s {
 #endif
 
 	// NSEL extensions
-#ifdef NSEL 
+#ifdef NSEL
 #define NSEL_BASE_OFFSET     (offsetof(master_record_t, conn_id) >> 3)
 
 	// common block
@@ -2083,11 +2088,14 @@ typedef struct master_record_s {
  * - the extension map must be updated accordingly
  */
 
+#define OffsetUserID  (offsetof(master_record_t, userid) >> 3)
+	char userid[64];
+
 #ifdef USER_EXTENSION_1
 	uint64_t	u64_1;
 #	define Offset_BASE_U1	offsetof(master_record_t, u64_1)
 #	define OffsetUser1_u64	Offset_BASE_U1
-	
+
 	uint32_t	u32_1;
 	uint32_t	u32_2;
 #	define OffsetUser1_u32_1	Offset_BASE_U1 + 8
@@ -2099,7 +2107,7 @@ typedef struct master_record_s {
 	// reference to exporter
 	exporter_info_record_t	*exp_ref;
 
-	// last entry in master record 
+	// last entry in master record
 #	define Offset_MR_LAST	offsetof(master_record_t, map_ref)
 	extension_map_t	*map_ref;
 
@@ -2110,7 +2118,7 @@ typedef struct master_record_s {
 #define AnyMask  	0xffffffffffffffffLL
 
 
-// convenience type conversion record 
+// convenience type conversion record
 typedef struct type_mask_s {
 	union {
 		uint8_t		val8[8];
@@ -2147,7 +2155,7 @@ typedef struct type_mask_s {
 /*
  * Data block type 1 compatibility
  */
- 
+
 typedef struct common_record_v1_s {
     // the head of each data record
     uint32_t    flags;
@@ -2211,4 +2219,3 @@ void Convert_v1_to_v2(void *mem);
 #endif
 
 #endif //_NFFILE_H
-

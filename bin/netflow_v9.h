@@ -4,31 +4,31 @@
  *  Copyright (c) 2009, Peter Haag
  *  Copyright (c) 2004-2008, SWITCH - Teleinformatikdienste fuer Lehre und Forschung
  *  All rights reserved.
- *  
- *  Redistribution and use in source and binary forms, with or without 
+ *
+ *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions are met:
- *  
- *   * Redistributions of source code must retain the above copyright notice, 
+ *
+ *   * Redistributions of source code must retain the above copyright notice,
  *     this list of conditions and the following disclaimer.
- *   * Redistributions in binary form must reproduce the above copyright notice, 
- *     this list of conditions and the following disclaimer in the documentation 
+ *   * Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
  *     and/or other materials provided with the distribution.
- *   * Neither the name of the author nor the names of its contributors may be 
- *     used to endorse or promote products derived from this software without 
+ *   * Neither the name of the author nor the names of its contributors may be
+ *     used to endorse or promote products derived from this software without
  *     specific prior written permission.
- *  
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
- *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
- *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
- *  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE 
- *  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
- *  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
- *  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
- *  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
- *  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
- *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ *  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *  POSSIBILITY OF SUCH DAMAGE.
- *  
+ *
  */
 
 /* v9 structures */
@@ -170,6 +170,7 @@ typedef struct common_header_s {
 #define _16bytes  16
 #define _20bytes  20
 #define _24bytes  24
+#define _64bytes  64
 #define _65bytes  65
 #define _72bytes  72
 
@@ -216,8 +217,8 @@ typedef struct common_header_s {
 #define NF9_ENGINE_TYPE			38
 #define NF9_ENGINE_ID			39
 
-#define NF9_FLOW_SAMPLER_ID 	48 
-#define FLOW_SAMPLER_MODE 		49 
+#define NF9_FLOW_SAMPLER_ID 	48
+#define FLOW_SAMPLER_MODE 		49
 #define NF9_FLOW_SAMPLER_RANDOM_INTERVAL 50
 
 #define NF_SELECTOR_ID			302
@@ -235,8 +236,8 @@ typedef struct common_header_s {
 #define NF9_DST_VLAN			59
 
 #define NF9_DIRECTION	        61
-#define NF9_V6_NEXT_HOP 		62 
-#define NF9_BPG_V6_NEXT_HOP   	63 
+#define NF9_V6_NEXT_HOP 		62
+#define NF9_BPG_V6_NEXT_HOP   	63
 // #define NF9_V6_OPTION_HEADERS 64
 
 #define NF9_MPLS_LABEL_1		70
@@ -306,6 +307,8 @@ typedef struct common_header_s {
 #define NF9_NPROBE_SERVER_NW_DELAY_USEC 57557
 #define NF9_NPROBE_APPL_LATENCY_SEC		57558
 #define NF9_NPROBE_APPL_LATENCY_USEC	57559
+
+#define NF9_PAN_USERID 56702
 
 /* prototypes */
 int Init_v9(void);

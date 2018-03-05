@@ -3,37 +3,37 @@
  *  Copyright (c) 2009, Peter Haag
  *  Copyright (c) 2004-2008, SWITCH - Teleinformatikdienste fuer Lehre und Forschung
  *  All rights reserved.
- *  
- *  Redistribution and use in source and binary forms, with or without 
+ *
+ *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions are met:
- *  
- *   * Redistributions of source code must retain the above copyright notice, 
+ *
+ *   * Redistributions of source code must retain the above copyright notice,
  *     this list of conditions and the following disclaimer.
- *   * Redistributions in binary form must reproduce the above copyright notice, 
- *     this list of conditions and the following disclaimer in the documentation 
+ *   * Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
  *     and/or other materials provided with the distribution.
- *   * Neither the name of the author nor the names of its contributors may be 
- *     used to endorse or promote products derived from this software without 
+ *   * Neither the name of the author nor the names of its contributors may be
+ *     used to endorse or promote products derived from this software without
  *     specific prior written permission.
- *  
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
- *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
- *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
- *  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE 
- *  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
- *  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
- *  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
- *  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
- *  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
- *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ *  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *  POSSIBILITY OF SUCH DAMAGE.
- *  
+ *
  *  $Author: haag $
  *
  *  $Id: nfx.c 58 2010-02-26 12:26:07Z haag $
  *
  *  $LastChangedRevision: 58 $
- *	
+ *
  */
 
 #include "config.h"
@@ -80,7 +80,7 @@ extension_descriptor_t extension_descriptor[] = {
 	{ EX_IO_SNMP_4, 		8, 	 1, 1,   "4 byte input/output interface index"},
 	{ EX_AS_2, 				4, 	 2, 1,   "2 byte src/dst AS number"},
 	{ EX_AS_4, 				8, 	 2, 1,   "4 byte src/dst AS number"},
-	{ EX_MULIPLE, 			4, 	 3, 0,   "dst tos, direction, src/dst mask"}, 
+	{ EX_MULIPLE, 			4, 	 3, 0,   "dst tos, direction, src/dst mask"},
 	{ EX_NEXT_HOP_v4,		4,	 4, 0,   "IPv4 next hop"},
 	{ EX_NEXT_HOP_v6,		16,	 4, 0,   "IPv6 next hop"},
 	{ EX_NEXT_HOP_BGP_v4,	4,	 5, 0,   "IPv4 BGP next IP"},
@@ -133,6 +133,8 @@ extension_descriptor_t extension_descriptor[] = {
 	{ EX_PORT_BLOCK_ALLOC, 	8,	32, 0,    	"NAT Port Block Allocation"},
 	{ EX_NEL_RESERVED_1,	0,	0, 0,		NULL},
 
+	{ EX_PAN_USERID,                  64,     65, 0,          "Palo Alto User-ID"},
+
 	// last entry
 	{ 0,	0,	0, 0,	NULL }
 };
@@ -163,7 +165,7 @@ int i;
 	i = 1;
 	while ( extension_descriptor[i].id ) {
 		if ( extension_descriptor[i].id != i ) {
-			printf("*** ERROR *** Init extension_descriptors at index %i: ID: %i, %s\n", 
+			printf("*** ERROR *** Init extension_descriptors at index %i: ID: %i, %s\n",
 				i, extension_descriptor[i].id, extension_descriptor[i].description);
 		}
 		i++;
@@ -177,9 +179,9 @@ int i;
 void FreeExtensionMaps(extension_map_list_t *extension_map_list) {
 extension_info_t *l;
 
-	if ( extension_map_list == NULL ) 
+	if ( extension_map_list == NULL )
 		return;
-	
+
 	// free all extension infos
 	l = extension_map_list->map_list;
 	while ( l ) {
@@ -208,13 +210,13 @@ uint16_t map_id;
 		dbg_printf("Extension info in slot %d already exists: 0x%llu\n", map_id, (long long unsigned)extension_map_list->slot[map_id]);
 		// no - check if same map already in slot
 		if ( extension_map_list->slot[map_id]->map->size == map->size ) {
-			// existing map and new map have the same size 
+			// existing map and new map have the same size
 			dbg_printf("New map has same size, as existing:\n");
 
 			// we must compare the maps
 			i = 0;
-			while ( extension_map_list->slot[map_id]->map->ex_id[i] && 
-					(extension_map_list->slot[map_id]->map->ex_id[i] == map->ex_id[i]) ) 
+			while ( extension_map_list->slot[map_id]->map->ex_id[i] &&
+					(extension_map_list->slot[map_id]->map->ex_id[i] == map->ex_id[i]) )
 				i++;
 
 			// if last entry == 0 => last map entry => maps are the same
@@ -222,10 +224,10 @@ uint16_t map_id;
 				dbg_printf("Same map => nothing to do\n");
 				// same map
 				return 0;
-			} 
+			}
 		}
 		dbg_printf("Different map => continue\n");
-	} 
+	}
 #ifdef DEVEL
 	 else
 		printf("Extension info in slot %d free\n", map_id);
@@ -237,7 +239,7 @@ uint16_t map_id;
 		int i = 0;
 		dbg_printf("Check map: %u\n", l->map->map_id);
 		if ( l->map->size == map->size && ( l->map->extension_size == map->extension_size ) ) {
-			while ( (l->map->ex_id[i] || map->ex_id[i]) && (l->map->ex_id[i] == map->ex_id[i]) ) 
+			while ( (l->map->ex_id[i] || map->ex_id[i]) && (l->map->ex_id[i] == map->ex_id[i]) )
 				i++;
 			if ( l->map->ex_id[i] == 0 ) {
 				dbg_printf("Map found: 0x%llu ID: %u\n", (long long unsigned)l, l->map->map_id);
@@ -278,7 +280,7 @@ uint16_t map_id;
 	dbg_printf("Insert extension into slot %i: 0x%llu\n\n", map_id, (long long unsigned)l);
 
 	// remove map from lookup list, if it exists
-	if ( extension_map_list->slot[map_id] ) 
+	if ( extension_map_list->slot[map_id] )
 		extension_map_list->slot[map_id]->map->map_id = 0;
 
 	// place existing extension_info into lookup list
@@ -336,7 +338,7 @@ int i, free_slot;
 	// Check maps
 	i = 0;
 	while ( extension_map_list->slot[i] != NULL && i < MAX_EXTENSION_MAPS ) {
-		if ( extension_map_list->slot[i]->map->map_id != i ) 
+		if ( extension_map_list->slot[i]->map->map_id != i )
 			printf("*** Map ID missmatch in slot: %i, id: %u\n", i, extension_map_list->slot[i]->map->map_id);
 		i++;
 	}
@@ -375,7 +377,7 @@ char *p, *q, *s;
 		q = strchr(p, ',');
 		if ( q )
 			*q++ = '\0';
-		
+
 		// get possible sign
 		sign = 1;
 		if ( *p == '-' ) {
@@ -388,8 +390,8 @@ char *p, *q, *s;
 		}
 
 		if ( strcmp(p, "all") == 0 ) {
-			for (i=4; extension_descriptor[i].id; i++ ) 
-				if ( extension_descriptor[i].description ) 
+			for (i=4; extension_descriptor[i].id; i++ )
+				if ( extension_descriptor[i].description )
 					extension_descriptor[i].enabled = sign == 1 ? 1 : 0;
 		} else if ( strcmp(p, "nsel") == 0 ) {
 			extension_descriptor[EX_IO_SNMP_2].enabled		  = 0;
@@ -414,9 +416,9 @@ char *p, *q, *s;
 					fprintf(stderr, "Extension format error: Unexpected end of format.\n");
 					exit(255);
 					break;
-				case '*': 
-					for (i=4; extension_descriptor[i].id; i++ ) 
-						if ( extension_descriptor[i].description ) 
+				case '*':
+					for (i=4; extension_descriptor[i].id; i++ )
+						if ( extension_descriptor[i].description )
 							extension_descriptor[i].enabled = sign == 1 ? 1 : 0;
 					break;
 				default: {
@@ -431,7 +433,7 @@ char *p, *q, *s;
 					}
 					mask[i] = sign;
 				}
-					
+
 			}
 		}
 		p = q;
@@ -440,10 +442,10 @@ char *p, *q, *s;
 		int ui = extension_descriptor[i].user_index;
 
 		// Skip reserved extensions
-		if ( !extension_descriptor[i].description ) 
+		if ( !extension_descriptor[i].description )
 			continue;
 
-		// mask[ui] == 0 means no input from user -> default behaviour or already overwritten by '*' 
+		// mask[ui] == 0 means no input from user -> default behaviour or already overwritten by '*'
 		if ( mask[ui] < 0 ) {
 			extension_descriptor[i].enabled = 0;
 		}
@@ -589,9 +591,9 @@ uint64_t total_bytes;
 		switch (ret) {
 			case NF_CORRUPT:
 			case NF_ERROR:
-				if ( ret == NF_CORRUPT ) 
+				if ( ret == NF_CORRUPT )
 					LogError("Corrupt data file '%s': '%s'\n",filename);
-				else 
+				else
 					LogError("Read error in file '%s': %s\n",filename, strerror(errno) );
 				done = 1;
 				continue;
@@ -601,7 +603,7 @@ uint64_t total_bytes;
 				done = 1;
 				continue;
 				break;
-	
+
 			default:
 				// successfully read block
 				total_bytes += ret;
@@ -624,7 +626,7 @@ uint64_t total_bytes;
 			}
 
 			// Advance pointer by number of bytes for netflow record
-			flow_record = (common_record_t *)((pointer_addr_t)flow_record + flow_record->size);	
+			flow_record = (common_record_t *)((pointer_addr_t)flow_record + flow_record->size);
 		}
 	}
 
@@ -632,4 +634,3 @@ uint64_t total_bytes;
 	DisposeFile(nffile);
 
 } // End of DumpExMaps
-

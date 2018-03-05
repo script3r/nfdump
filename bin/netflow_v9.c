@@ -4,31 +4,31 @@
  *  Copyright (c) 2009, Peter Haag
  *  Copyright (c) 2004-2008, SWITCH - Teleinformatikdienste fuer Lehre und Forschung
  *  All rights reserved.
- *  
- *  Redistribution and use in source and binary forms, with or without 
+ *
+ *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions are met:
- *  
- *   * Redistributions of source code must retain the above copyright notice, 
+ *
+ *   * Redistributions of source code must retain the above copyright notice,
  *     this list of conditions and the following disclaimer.
- *   * Redistributions in binary form must reproduce the above copyright notice, 
- *     this list of conditions and the following disclaimer in the documentation 
+ *   * Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
  *     and/or other materials provided with the distribution.
- *   * Neither the name of the author nor the names of its contributors may be 
- *     used to endorse or promote products derived from this software without 
+ *   * Neither the name of the author nor the names of its contributors may be
+ *     used to endorse or promote products derived from this software without
  *     specific prior written permission.
- *  
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
- *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
- *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
- *  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE 
- *  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
- *  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
- *  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
- *  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
- *  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
- *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ *  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *  POSSIBILITY OF SUCH DAMAGE.
- *  
+ *
  */
 
 #include "config.h"
@@ -117,6 +117,8 @@ typedef struct sequence_map_s {
 #define zero64			25
 #define zero96			26
 #define zero128			27
+#define move_userid_64 28
+
 
 	uint32_t	id;				// sequence ID as defined above
 	uint16_t	input_offset;	// copy/process data at this input offset
@@ -153,7 +155,7 @@ typedef struct input_translation_s {
 	extension_info_t 	 extension_info;	// the nfcap extension map, reflecting this template
 
 	// sequence map information
-	uint32_t	number_of_sequences;	// number of sequences for the translate 
+	uint32_t	number_of_sequences;	// number of sequences for the translate
 	sequence_map_t *sequence;			// sequence map
 
 } input_translation_t;
@@ -180,7 +182,7 @@ typedef struct exporter_v9_domain_s {
 	int64_t		sequence;
 	int			first;
 
-	// sampling information: 
+	// sampling information:
 	// each flow source may have several sampler applied
 	// tags #48, #49, #50
 	// each sampler is assinged a sampler struct
@@ -189,19 +191,19 @@ typedef struct exporter_v9_domain_s {
 	// stored in a sampler with id = -1;
 
 	// translation table
-	input_translation_t	*input_translation_table; 
+	input_translation_t	*input_translation_table;
 	input_translation_t *current_table;
 } exporter_v9_domain_t;
 
 
 /* module limited globals */
 static struct v9_element_map_s {
-	uint16_t	id;			// v9 element id 
+	uint16_t	id;			// v9 element id
 	char		*name;		// name string
 	uint16_t	length;		// type of this element ( input length )
 	uint16_t	out_length;	// type of this element ( output length )
 	uint32_t	sequence;	// sequencer ID
-	uint32_t	zero_sequence;	// 
+	uint32_t	zero_sequence;	//
 	uint16_t	extension;	// maps into nfdump extension ID
 } v9_element_map[] = {
 	{0, 0, 0},
@@ -269,7 +271,7 @@ static struct v9_element_map_s {
 	{ NF9_IN_SRC_MAC, 			 "in src mac",		_6bytes,  _8bytes, move_mac, zero64, EX_MAC_1},
 	{ NF9_OUT_DST_MAC, 	 		 "out dst mac",		_6bytes,  _8bytes, move_mac, zero64, EX_MAC_1},
 
-	{ NF9_SRC_VLAN, 			 "src vlan",		_2bytes,  _2bytes, move16, zero16, EX_VLAN}, 
+	{ NF9_SRC_VLAN, 			 "src vlan",		_2bytes,  _2bytes, move16, zero16, EX_VLAN},
 	{ NF9_DST_VLAN, 			 "dst vlan",		_2bytes,  _2bytes, move16, zero16, EX_VLAN},
 
 	{ NF9_DIRECTION, 	 	 	 "direction",		_1byte,   _1byte,  move8, zero8, EX_MULIPLE },
@@ -353,12 +355,14 @@ static struct v9_element_map_s {
 	{ NF9_NPROBE_SERVER_NW_DELAY_SEC, 	 "NPROBE server lat sec",	_4bytes, _8bytes, move_slatency, nop, EX_LATENCY },
 	{ NF9_NPROBE_APPL_LATENCY_SEC, 	 	 "NPROBE appl lat sec",		_4bytes, _8bytes, move_slatency, nop, EX_LATENCY },
 
+	{ NF9_PAN_USERID, 			 "PAN user id 64",		_64bytes,  _64bytes, move_userid_64, zero32, EX_PAN_USERID },
+
 	{0, "NULL",	0, 0}
 };
 
-/* 
+/*
  * tmp cache while processing template records
- * array index = extension id, 
+ * array index = extension id,
  * value = 1 -> extension exists, 0 -> extension does not exists
  */
 
@@ -395,10 +399,10 @@ static uint32_t				Max_num_v9_tags;
 static uint32_t				processed_records;
 
 /* local function prototypes */
-static void InsertSamplerOffset( FlowSource_t *fs, uint16_t id, uint16_t offset_sampler_id, uint16_t sampler_id_length, 
+static void InsertSamplerOffset( FlowSource_t *fs, uint16_t id, uint16_t offset_sampler_id, uint16_t sampler_id_length,
 	uint16_t offset_sampler_mode, uint16_t offset_sampler_interval);
 
-static void InsertStdSamplerOffset( FlowSource_t *fs, uint16_t id, uint16_t offset_std_sampler_interval, 
+static void InsertStdSamplerOffset( FlowSource_t *fs, uint16_t id, uint16_t offset_std_sampler_interval,
 	uint16_t offset_std_sampler_algorithm);
 
 static void InsertSampler( FlowSource_t *fs, exporter_v9_domain_t *exporter, int32_t id, uint16_t mode, uint32_t interval);
@@ -456,7 +460,7 @@ int i;
 		uint32_t Type = v9_element_map[i].id;
 		// multiple same type - save first index only
 		// iterate through same Types afterwards
-		if ( cache.lookup_info[Type].index == 0 ) 
+		if ( cache.lookup_info[Type].index == 0 )
 			cache.lookup_info[Type].index  = i;
 	}
 	cache.max_v9_elements = i;
@@ -465,7 +469,7 @@ int i;
 
 
 	return 1;
-	
+
 } // End of Init_v9
 
 static inline exporter_v9_domain_t *GetExporter(FlowSource_t *fs, uint32_t exporter_id) {
@@ -474,8 +478,8 @@ char ipstr[IP_STRING_LEN];
 exporter_v9_domain_t **e = (exporter_v9_domain_t **)&(fs->exporter_data);
 
 	while ( *e ) {
-		if ( (*e)->info.id == exporter_id && (*e)->info.version == 9 && 
-			 (*e)->info.ip.V6[0] == fs->ip.V6[0] && (*e)->info.ip.V6[1] == fs->ip.V6[1]) 
+		if ( (*e)->info.id == exporter_id && (*e)->info.version == 9 &&
+			 (*e)->info.ip.V6[0] == fs->ip.V6[0] && (*e)->info.ip.V6[1] == fs->ip.V6[1])
 			return *e;
 		e = &((*e)->next);
 	}
@@ -515,9 +519,9 @@ exporter_v9_domain_t **e = (exporter_v9_domain_t **)&(fs->exporter_data);
 
 	FlushInfoExporter(fs, &((*e)->info));
 
-	dbg_printf("Process_v9: New exporter: SysID: %u, Domain: %u, IP: %s\n", 
+	dbg_printf("Process_v9: New exporter: SysID: %u, Domain: %u, IP: %s\n",
 		(*e)->info.sysid, exporter_id, ipstr);
-	LogInfo("Process_v9: New exporter: SysID: %u, Domain: %u, IP: %s\n", 
+	LogInfo("Process_v9: New exporter: SysID: %u, Domain: %u, IP: %s\n",
 		(*e)->info.sysid, exporter_id, ipstr);
 
 
@@ -536,21 +540,21 @@ int	index;
 				cache.lookup_info[Type].offset = Offset;
 				cache.lookup_info[Type].length = Length;
 				cache.lookup_info[Type].index  = index;
-				dbg_printf("found extension %u for type: %u(%s), at index: %i, input length: %u output length: %u Extension: %u, Offset: %u\n", 
+				dbg_printf("found extension %u for type: %u(%s), at index: %i, input length: %u output length: %u Extension: %u, Offset: %u\n",
 					v9_element_map[index].extension, v9_element_map[index].id, v9_element_map[index].name, index,
 					v9_element_map[index].length, v9_element_map[index].out_length, v9_element_map[index].extension, Offset);
 				return v9_element_map[index].extension;
-			} 
+			}
 			index++;
 		}
 #ifdef DEVEL
 		index--;
-		printf("=> known type: %u(%s), at index: %i, length: %u not supported\n", 
+		printf("=> known type: %u(%s), at index: %i, length: %u not supported\n",
 			Type, v9_element_map[index].name, index, Length);
 
 #endif
-	} 
-	dbg_printf("Skip unknown element type: %u, Length: %u\n", 
+	}
+	dbg_printf("Skip unknown element type: %u, Length: %u\n",
 		Type, Length);
 
 	return 0;
@@ -573,7 +577,7 @@ input_translation_t *table;
 		table = table->next;
 	}
 
-	dbg_printf("[%u/%u] Get translation table %u: %s\n", 
+	dbg_printf("[%u/%u] Get translation table %u: %s\n",
 		exporter->info.id, exporter->info.sysid, id, table == NULL ? "not found" : "found");
 
 	exporter->current_table = table;
@@ -590,7 +594,7 @@ input_translation_t **table;
 	}
 
 	// Allocate enough space for all potential v9 tags, which we support in v9_element_map
-	// so template refreshing may change the table size without danger of overflowing 
+	// so template refreshing may change the table size without danger of overflowing
 	*table = calloc(1, sizeof(input_translation_t));
 	if ( !(*table) ) {
 			LogError( "Process_v9: Panic! calloc() %s line %d: %s", __FILE__, __LINE__, strerror (errno));
@@ -616,9 +620,9 @@ uint32_t i = table->number_of_sequences;
 uint32_t index = cache.lookup_info[Type].index;
 
 	if ( table->number_of_sequences >= cache.max_v9_elements ) {
-		LogError( "Process_v9: Software bug! Sequence table full. at %s line %d", 
+		LogError( "Process_v9: Software bug! Sequence table full. at %s line %d",
 			__FILE__, __LINE__);
-		dbg_printf("Software bug! Sequence table full. at %s line %d", 
+		dbg_printf("Software bug! Sequence table full. at %s line %d",
 			__FILE__, __LINE__);
 		return;
 	}
@@ -640,7 +644,7 @@ uint32_t index = cache.lookup_info[Type].index;
 			dbg_printf("Zero ");
 	}
 	dbg_printf("Push: sequence: %u, Type: %u, length: %u, out length: %u, id: %u, in offset: %u, out offset: %u\n",
-		i, Type, v9_element_map[index].length, v9_element_map[index].out_length, table->sequence[i].id, 
+		i, Type, v9_element_map[index].length, v9_element_map[index].out_length, table->sequence[i].id,
 		table->sequence[i].input_offset, table->sequence[i].output_offset);
 	table->number_of_sequences++;
 	(*offset) += v9_element_map[index].out_length;
@@ -724,7 +728,7 @@ size_t				size_required;
 	// fill table
 	table->id 			= id;
 
-	/* 
+	/*
 	 * common data block: The common record is expected in the output stream. If not available
 	 * in the template, fill values with 0
 	 */
@@ -763,14 +767,14 @@ size_t				size_required;
 	 * in the template, assume empty v4 address.
 	 */
 	if ( cache.lookup_info[NF9_IPV4_SRC_ADDR].found ) {
-		// IPv4 addresses 
+		// IPv4 addresses
 		PushSequence( table, NF9_IPV4_SRC_ADDR, &offset, NULL, 0);
 		PushSequence( table, NF9_IPV4_DST_ADDR, &offset, NULL, 0);
 	} else if ( cache.lookup_info[NF9_IPV6_SRC_ADDR].found ) {
-		// IPv6 addresses 
+		// IPv6 addresses
 		PushSequence( table, NF9_IPV6_SRC_ADDR, &offset, NULL, 0);
 		PushSequence( table, NF9_IPV6_DST_ADDR, &offset, NULL, 0);
-		// mark IPv6 
+		// mark IPv6
 		SetFlag(table->flags, FLAG_IPV6_ADDR);
 		ipv6 = 1;
 	} else {
@@ -800,7 +804,7 @@ size_t				size_required;
 	SetFlag(table->flags, FLAG_BYTES_64);
 
 #if defined NSEL || defined NEL
-	if ( cache.lookup_info[NF_F_FW_EVENT].found || cache.lookup_info[NF_F_FW_EVENT_84].found || 
+	if ( cache.lookup_info[NF_F_FW_EVENT].found || cache.lookup_info[NF_F_FW_EVENT_84].found ||
 		 cache.lookup_info[NF_N_NAT_EVENT].found) {
 		SetFlag(table->flags, FLAG_EVENT);
 	}
@@ -1042,6 +1046,9 @@ size_t				size_required;
 			case EX_NSEL_USER_MAX:
 				PushSequence( table, NF_F_USERNAME, &offset, NULL, 0);
 				break;
+			case EX_PAN_USERID:
+				PushSequence( table, NF9_PAN_USERID, &offset, NULL, 0);
+				break;
 			case EX_NEL_COMMON:
 				PushSequence( table, NF_N_NAT_EVENT, &offset, NULL, 0);
 				offset += 3;
@@ -1072,13 +1079,13 @@ size_t				size_required;
 
 	}
 	extension_map->ex_id[next_extension++] = 0;
- 
+
     // make sure map is aligned
     if ( extension_map->size & 0x3 ) {
         extension_map->ex_id[next_extension] = 0;
         extension_map->size = ( extension_map->size + 3 ) &~ 0x3;
     }
- 
+
 	table->output_record_size = offset;
 	table->input_record_size  = input_record_size;
 
@@ -1087,7 +1094,7 @@ size_t				size_required;
 	// remember offset, for decoding
 	if ( cache.lookup_info[NF9_ICMP_TYPE].found && cache.lookup_info[NF9_ICMP_TYPE].length == 2 ) {
 		table->ICMP_offset = cache.lookup_info[NF9_ICMP_TYPE].offset;
-	} 
+	}
 
 	/* Sampler ID */
 	if ( cache.lookup_info[NF9_FLOW_SAMPLER_ID].found ) {
@@ -1101,9 +1108,9 @@ size_t				size_required;
 				dbg_printf("%d byte Sampling ID included at offset %u\n", length, table->sampler_offset);
 				break;
 			default:
-				LogError( "Process_v9: Unexpected SAMPLER ID field length: %d", 
+				LogError( "Process_v9: Unexpected SAMPLER ID field length: %d",
 					cache.lookup_info[NF9_FLOW_SAMPLER_ID].length);
-				dbg_printf("Unexpected SAMPLER ID field length: %d", 
+				dbg_printf("Unexpected SAMPLER ID field length: %d",
 					cache.lookup_info[NF9_FLOW_SAMPLER_ID].length);
 		}
 	} else {
@@ -1117,16 +1124,16 @@ size_t				size_required;
 		printf("[%u] template %u unchanged\n", exporter->info.id, id);
 	}
 
-	printf("Process_v9: Check extension map: id: %d, size: %u, extension_size: %u\n", 
+	printf("Process_v9: Check extension map: id: %d, size: %u, extension_size: %u\n",
 		extension_map->map_id, extension_map->size, extension_map->extension_size);
 	{ int i;
 	for (i=0; i<table->number_of_sequences; i++ ) {
 		printf("Sequence %i: id: %u, in offset: %u, out offset: %u, stack: %llu\n",
-			i, table->sequence[i].id, table->sequence[i].input_offset, table->sequence[i].output_offset, 
+			i, table->sequence[i].id, table->sequence[i].input_offset, table->sequence[i].output_offset,
 			(unsigned long long)table->sequence[i].stack);
 	}
-	printf("Flags: 0x%x\n", table->flags); 
-	printf("Input record size: %u, output record size: %u\n", 
+	printf("Flags: 0x%x\n", table->flags);
+	printf("Input record size: %u, output record size: %u\n",
 		table->input_record_size, table->output_record_size);
 	}
 	PrintExtensionMap(extension_map);
@@ -1146,7 +1153,7 @@ option_offset_t	**t;
 			dbg_printf("Found existing sampling info in template %i\n", id);
 			break;
 		}
-	
+
 		t = &((*t)->next);
 	}
 
@@ -1156,8 +1163,8 @@ option_offset_t	**t;
 		if ( !*t ) {
 			fprintf(stderr, "malloc() allocation error: %s\n", strerror(errno));
 			return ;
-		} 
-		dbg_printf("Process_v9: New sampler: ID %i, mode: %i, interval: %i\n", 
+		}
+		dbg_printf("Process_v9: New sampler: ID %i, mode: %i, interval: %i\n",
 			offset_sampler_id, offset_sampler_mode, offset_sampler_interval);
 	}	// else existing table
 
@@ -1180,7 +1187,7 @@ option_offset_t	**t;
 			dbg_printf("Found existing std sampling info in template %i\n", id);
 			break;
 		}
-	
+
 		t = &((*t)->next);
 	}
 
@@ -1190,8 +1197,8 @@ option_offset_t	**t;
 		if ( !*t ) {
 			fprintf(stderr, "malloc() allocation error: %s\n", strerror(errno));
 			return ;
-		} 
-		LogError( "Process_v9: New std sampler: interval: %i, algorithm: %i", 
+		}
+		LogError( "Process_v9: New std sampler: interval: %i, algorithm: %i",
 			offset_std_sampler_interval, offset_std_sampler_algorithm);
 	}	// else existing table
 
@@ -1203,7 +1210,7 @@ option_offset_t	**t;
 	(*t)->offset_interval	= 0;
 	(*t)->offset_std_sampler_interval	= offset_std_sampler_interval;
 	(*t)->offset_std_sampler_algorithm	= offset_std_sampler_algorithm;
-	
+
 } // End of InsertStdSamplerOffset
 
 static inline void Process_v9_templates(exporter_v9_domain_t *exporter, void *template_flowset, FlowSource_t *fs) {
@@ -1242,7 +1249,7 @@ int			i;
 		dbg_printf("template size: %u buffersize: %u\n", size_required, size_left);
 
 		if ( size_left < size_required ) {
-			LogError( "Process_v9: [%u] buffer size error: expected %u available %u", 
+			LogError( "Process_v9: [%u] buffer size error: expected %u available %u",
 				exporter->info.id, size_required, size_left);
 			size_left = 0;
 			continue;
@@ -1250,7 +1257,7 @@ int			i;
 
 		Offset = 0;
 		num_extensions = 0;		// number of extensions
-		num_v9tags = 0;			// number of optional v9 tags 
+		num_v9tags = 0;			// number of optional v9 tags
 
 		p = template + 4;		// type/length pairs start at template offset 4
 		for(i=0; i<count; i++ ) {
@@ -1272,7 +1279,7 @@ int			i;
 					dbg_printf("Enable extension: %2i: %s\n", ext_id, extension_descriptor[ext_id].description);
 					num_extensions++;
 				}
-			} 
+			}
 			Offset += Length;
 		}
 
@@ -1282,10 +1289,10 @@ int			i;
 				cache.common_extensions[EX_ROUTER_IP_v4] = 1;
 				num_extensions++;
 			}
-			dbg_printf("Add sending router IP address (%s) => Extension: %u\n", 
+			dbg_printf("Add sending router IP address (%s) => Extension: %u\n",
 				fs->sa_family == PF_INET6 ? "ipv6" : "ipv4", EX_ROUTER_IP_v4);
 		}
-	
+
 		// as the router IP address extension is not part announced in a template, we need to deal with it here
 		if ( extension_descriptor[EX_ROUTER_ID].enabled ) {
 			if ( cache.common_extensions[EX_ROUTER_ID] == 0 ) {
@@ -1303,7 +1310,7 @@ int			i;
 			}
 			dbg_printf("Force add packet received time, Extension: %u\n", EX_RECEIVED);
 		}
-	
+
 		dbg_printf("Parsed %u v9 tags, total %u extensions\n", num_v9tags, num_extensions);
 
 
@@ -1345,24 +1352,24 @@ uint16_t	offset_std_sampler_interval, offset_std_sampler_algorithm, found_std_sa
 	i = 0;	// keep compiler happy
 	size_left 		= GET_FLOWSET_LENGTH(option_template_flowset) - 4; // -4 for flowset header -> id and length
 	option_template = option_template_flowset + 4;
-	id 	  			= GET_OPTION_TEMPLATE_ID(option_template); 
+	id 	  			= GET_OPTION_TEMPLATE_ID(option_template);
 	scope_length 	= GET_OPTION_TEMPLATE_OPTION_SCOPE_LENGTH(option_template);
 	option_length 	= GET_OPTION_TEMPLATE_OPTION_LENGTH(option_template);
 
 	if ( scope_length & 0x3 ) {
-		LogError( "Process_v9: [%u] scope length error: length %u not multiple of 4", 
+		LogError( "Process_v9: [%u] scope length error: length %u not multiple of 4",
 			exporter->info.id, scope_length);
 		return;
 	}
 
 	if ( option_length & 0x3 ) {
-		LogError( "Process_v9: [%u] option length error: length %u not multiple of 4", 
+		LogError( "Process_v9: [%u] option length error: length %u not multiple of 4",
 			exporter->info.id, option_length);
 		return;
 	}
 
 	if ( (scope_length + option_length) > size_left ) {
-		LogError( "Process_v9: [%u] option template length error: size left %u too small for %u scopes length and %u options length", 
+		LogError( "Process_v9: [%u] option template length error: size left %u too small for %u scopes length and %u options length",
 			exporter->info.id, size_left, scope_length, option_length);
 		return;
 	}
@@ -1464,7 +1471,7 @@ uint16_t	offset_std_sampler_interval, offset_std_sampler_algorithm, found_std_sa
 				offset_sampler_mode = offset;
 				found_sampler++;
 				break;
-			case NF9_FLOW_SAMPLER_RANDOM_INTERVAL: // depricated 
+			case NF9_FLOW_SAMPLER_RANDOM_INTERVAL: // depricated
 			case NF_SAMPLING_INTERVAL:
 				offset_sampler_interval = offset;
 				offset_std_sampler_interval = offset;
@@ -1479,7 +1486,7 @@ uint16_t	offset_std_sampler_interval, offset_std_sampler_algorithm, found_std_sa
 		dbg_printf("[%u] Sampling information found\n", exporter->info.id);
 		InsertSamplerOffset(fs, id, offset_sampler_id, sampler_id_length, offset_sampler_mode, offset_sampler_interval);
 	} else if ( found_std_sampling == 2 ) { // need all two tags
-		dbg_printf("[%u] Std sampling information found. offset intervall: %u, offset algo: %u\n", 
+		dbg_printf("[%u] Std sampling information found. offset intervall: %u, offset algo: %u\n",
 			exporter->info.id, offset_std_sampler_interval, offset_std_sampler_algorithm);
 		InsertStdSamplerOffset(fs, id, offset_std_sampler_interval, offset_std_sampler_algorithm);
 	} else {
@@ -1505,7 +1512,7 @@ char				*string;
 
 	dbg_printf("[%u] Process data flowset size: %u\n", exporter->info.id, size_left);
 
-	if ( table->sampler_offset ) 
+	if ( table->sampler_offset )
 		dbg_printf("table sampler offset: %u\n", table->sampler_offset);
 	dbg_printf("[%u] Exporter is 0x%llu\n", exporter->info.id, (long long unsigned)exporter);
 	dbg_printf("[%u] Exporter has sampler: %s\n", exporter->info.id, exporter->sampler ? "yes" : "no");
@@ -1521,7 +1528,7 @@ char				*string;
 		}
 		dbg_printf("Extract sampler: %u\n", sampler_id);
 		// usually not that many samplers, so following a chain is not too expensive.
-		while ( sampler && sampler->info.id != sampler_id ) 
+		while ( sampler && sampler->info.id != sampler_id )
 			sampler = sampler->next;
 
 		if ( sampler ) {
@@ -1537,7 +1544,7 @@ char				*string;
 
 	} else {
 		generic_sampler_t *sampler = exporter->sampler;
-		while ( sampler && sampler->info.id != -1 ) 
+		while ( sampler && sampler->info.id != -1 )
 			sampler = sampler->next;
 
 		if ( sampler ) {
@@ -1552,7 +1559,7 @@ char				*string;
 	if ( overwrite_sampling > 0 )  {
 		sampling_rate = overwrite_sampling;
 		dbg_printf("[%u] Hard overwrite sampling rate: %llu\n", exporter->info.id, (long long unsigned)sampling_rate);
-	} 
+	}
 
 	if ( sampling_rate != 1 )
 		SetFlag(table->flags, FLAG_SAMPLED);
@@ -1570,7 +1577,7 @@ char				*string;
 		if ( size_left < table->input_record_size ) {
 			if ( size_left > 3 ) {
 				LogError("Process_v9: Corrupt data flowset? Pad bytes: %u", size_left);
-				dbg_printf("Process_v9: Corrupt data flowset? Pad bytes: %u, table record_size: %u\n", 
+				dbg_printf("Process_v9: Corrupt data flowset? Pad bytes: %u, table record_size: %u\n",
 					size_left, table->input_record_size);
 			}
 			size_left = 0;
@@ -1591,8 +1598,8 @@ char				*string;
 		// map output buffer as a byte array
 		out 	  = (uint8_t *)data_record;
 
-		dbg_printf("[%u] Process data record: %u addr: %llu, in record size: %u, buffer size_left: %u\n", 
-			exporter->info.id, processed_records, (long long unsigned)((ptrdiff_t)in - (ptrdiff_t)data_flowset), 
+		dbg_printf("[%u] Process data record: %u addr: %llu, in record size: %u, buffer size_left: %u\n",
+			exporter->info.id, processed_records, (long long unsigned)((ptrdiff_t)in - (ptrdiff_t)data_flowset),
 			table->input_record_size, size_left);
 
 		// fill the data record
@@ -1653,27 +1660,27 @@ char				*string;
 						*((uint32_t *)&out[output_offset+4]) = t.val.val32[1];
 					}
 					break;
-				case move64: 
+				case move64:
 					{ type_mask_t t;
 						t.val.val64 = Get_val64((void *)&in[input_offset]);
 
 						*((uint32_t *)&out[output_offset]) 	 = t.val.val32[0];
 						*((uint32_t *)&out[output_offset+4]) = t.val.val32[1];
 					} break;
-				case move64_32: 
+				case move64_32:
 					{ type_mask_t t;
 						t.val.val64 = Get_val64((void *)&in[input_offset]);
 						*((uint32_t *)&out[output_offset]) =  t.val.val32[1];
 					} break;
-				case move96: 
+				case move96:
 					{   *((uint32_t *)&out[output_offset]) = Get_val32((void *)&in[input_offset]);
 						*((uint32_t *)&out[output_offset+4]) = Get_val32((void *)&in[input_offset+4]);
 						*((uint32_t *)&out[output_offset+8]) = Get_val32((void *)&in[input_offset+8]);
 					} break;
-				case move128: 
+				case move128:
 					/* 64bit access to potentially unaligned output buffer. use 2 x 32bit for _LP64 CPUs */
 					{ type_mask_t t;
-					  
+
 						t.val.val64 = Get_val64((void *)&in[input_offset]);
 						*((uint32_t *)&out[output_offset]) 	  = t.val.val32[0];
 						*((uint32_t *)&out[output_offset+4])  = t.val.val32[1];
@@ -1742,6 +1749,11 @@ char				*string;
 					memcpy((void *)&out[output_offset],(void *)&in[input_offset],65);
 					out[output_offset+65] = 0;	// trailing 0 for string
 					break;
+				case move_userid_64:
+					memcpy((void *)&out[output_offset],(void *)&in[input_offset],64);
+					out[output_offset+64] = 0;	// trailing 0 for string
+					break;
+
 				case TimeMsec:
 					{ uint64_t DateMiliseconds = Get_val64((void *)&in[input_offset]);
 					  *(uint64_t *)stack = DateMiliseconds;
@@ -1765,25 +1777,25 @@ char				*string;
 				case zero32:
 					*((uint32_t *)&out[output_offset]) = 0;
 					break;
-				case zero64: {   
+				case zero64: {
 						*((uint32_t *)&out[output_offset])   = 0;
 						*((uint32_t *)&out[output_offset+4]) = 0;
 					} break;
-				case zero96: 
+				case zero96:
 					{   *((uint32_t *)&out[output_offset])   = 0;
 						*((uint32_t *)&out[output_offset+4]) = 0;
 						*((uint32_t *)&out[output_offset+8]) = 0;
 					} break;
-				case zero128: {   
+				case zero128: {
 						*((uint32_t *)&out[output_offset])   = 0;
 						*((uint32_t *)&out[output_offset+4]) = 0;
 						*((uint32_t *)&out[output_offset+8]) = 0;
 						*((uint32_t *)&out[output_offset+12]) = 0;
 					} break;
 				default:
-					LogError( "Process_v9: Software bug! Unknown Sequence: %u. at %s line %d", 
+					LogError( "Process_v9: Software bug! Unknown Sequence: %u. at %s line %d",
 						table->sequence[i].id, __FILE__, __LINE__);
-					dbg_printf("Software bug! Unknown Sequence: %u. at %s line %d", 
+					dbg_printf("Software bug! Unknown Sequence: %u. at %s line %d",
 						table->sequence[i].id, __FILE__, __LINE__);
 			}
 		}
@@ -1841,20 +1853,20 @@ char				*string;
 				start_time = exporter->boot_time - 0x100000000LL + (uint64_t)First;
 			else
 				start_time = (uint64_t)First + exporter->boot_time;
-	
+
 			/* end time in msecs */
 			end_time = (uint64_t)Last + exporter->boot_time;
-	
+
 			if ( (end_time - start_time) > 0xffc00000 && table->bytes < 2000 ) {
 				dbg_printf("CISCO bugfix!\n");
 				start_time += 0xffc00000;
 			}
 			data_record->first 		= start_time/1000;
 			data_record->msec_first	= start_time - data_record->first*1000;
-		
+
 			data_record->last 		= end_time/1000;
 			data_record->msec_last	= end_time - data_record->last*1000;
-	
+
 			if ( data_record->first == 0 && data_record->last == 0 )
 				data_record->last = 0;
 		}
@@ -1871,7 +1883,7 @@ char				*string;
 			if ( exporter->info.sa_family == PF_INET6 ) {
 				/* 64bit access to potentially unaligned output buffer. use 2 x 32bit for _LP64 CPUs */
 				type_mask_t t;
-					  
+
 				t.val.val64 = exporter->info.ip.V6[0];
 				*((uint32_t *)&out[output_offset]) 	  = t.val.val32[0];
 				*((uint32_t *)&out[output_offset+4])  = t.val.val32[1];
@@ -1884,7 +1896,7 @@ char				*string;
 			}
 		}
 
-		// Ugly hack. CISCO never really implemented #38/#39 tags in the records - so take it from the 
+		// Ugly hack. CISCO never really implemented #38/#39 tags in the records - so take it from the
 		// header, unless some data is filled in
 		if ( table->engine_offset ) {
 			if ( *((uint32_t *)&out[table->engine_offset]) == 0 ) {
@@ -1937,7 +1949,7 @@ char				*string;
 		fs->nffile->stat_record->numbytes	+= table->bytes;
 		fs->nffile->stat_record->numpackets	+= table->out_packets;
 		fs->nffile->stat_record->numbytes	+= table->out_bytes;
-	
+
 		if ( verbose ) {
 			master_record_t master_record;
 			memset((void *)&master_record, 0, sizeof(master_record_t));
@@ -2006,13 +2018,13 @@ uint8_t		*in;
 			id = in[offset_table->offset_id];
 		}
 		mode 	 = in[offset_table->offset_mode];
-		interval = Get_val32((void *)&in[offset_table->offset_interval]); 
-	
+		interval = Get_val32((void *)&in[offset_table->offset_interval]);
+
 		dbg_printf("Extracted Sampler data:\n");
 		dbg_printf("Sampler ID      : %u\n", id);
 		dbg_printf("Sampler mode    : %u\n", mode);
 		dbg_printf("Sampler interval: %u\n", interval);
-	
+
 		InsertSampler(fs, exporter, id, mode, interval);
 	}
 
@@ -2028,9 +2040,9 @@ uint8_t		*in;
 		dbg_printf("Sampler algorithm: %u\n", mode);
 		dbg_printf("Sampler interval : %u\n", interval);
 
-		LogInfo( "Set std sampler: algorithm: %u, interval: %u\n", 
+		LogInfo( "Set std sampler: algorithm: %u, interval: %u\n",
 				mode, interval);
-		dbg_printf("Set std sampler: algorithm: %u, interval: %u\n", 
+		dbg_printf("Set std sampler: algorithm: %u, interval: %u\n",
 				mode, interval);
 	}
 	processed_records++;
@@ -2070,7 +2082,7 @@ static int pkg_num = 0;
   	v9_header->SysUptime 	= ntohl(v9_header->SysUptime);
   	v9_header->unix_secs	= ntohl(v9_header->unix_secs);
 	exporter->boot_time  	= (uint64_t)1000 * (uint64_t)(v9_header->unix_secs) - (uint64_t)v9_header->SysUptime;
-	
+
 	flowset_header 			= (void *)v9_header + NETFLOW_V9_HEADER_LENGTH;
 
 	size_left -= NETFLOW_V9_HEADER_LENGTH;
@@ -2098,10 +2110,10 @@ static int pkg_num = 0;
 		if (distance != 1) {
 			exporter->sequence_failure++;
 			fs->nffile->stat_record->sequence_failure++;
-			dbg_printf("[%u] Sequence error: last seq: %lli, seq %lli dist %lli\n", 
+			dbg_printf("[%u] Sequence error: last seq: %lli, seq %lli dist %lli\n",
 				exporter->info.id, (long long)exporter->last_sequence, (long long)exporter->sequence, (long long)distance);
 			/*
-			if ( report_seq ) 
+			if ( report_seq )
 				LogError("Flow sequence mismatch. Missing: %lli packets", delta(last_count,distance));
 			*/
 		}
@@ -2117,13 +2129,13 @@ static int pkg_num = 0;
 
 		flowset_id 		= GET_FLOWSET_ID(flowset_header);
 		flowset_length 	= GET_FLOWSET_LENGTH(flowset_header);
-			
-		dbg_printf("[%u] Next flowset: %u, length: %u buffersize: %li addr: %llu\n", 
-			exporter->info.id, flowset_id, flowset_length, size_left, 
+
+		dbg_printf("[%u] Next flowset: %u, length: %u buffersize: %li addr: %llu\n",
+			exporter->info.id, flowset_id, flowset_length, size_left,
 			(long long unsigned)(flowset_header - in_buff) );
 
 		if ( flowset_length == 0 ) {
-			/* 	this should never happen, as 4 is an empty flowset 
+			/* 	this should never happen, as 4 is an empty flowset
 				and smaller is an illegal flowset anyway ...
 				if it happends, we can't determine the next flowset, so skip the entire export packet
 			 */
@@ -2139,9 +2151,9 @@ static int pkg_num = 0;
 		}
 
 		if ( flowset_length > size_left ) {
-			dbg_printf("flowset length error. Expected bytes: %u > buffersize: %lli", 
+			dbg_printf("flowset length error. Expected bytes: %u > buffersize: %lli",
 				flowset_length, (long long)size_left);
-			LogError("Process_v9: flowset length error. Expected bytes: %u > buffersize: %lli", 
+			LogError("Process_v9: flowset length error. Expected bytes: %u > buffersize: %lli",
 				flowset_length, (long long)size_left);
 			size_left = 0;
 			continue;
@@ -2182,7 +2194,7 @@ static int pkg_num = 0;
 						Process_v9_option_data(exporter, flowset_header, fs);
 					} else {
 						// maybe a flowset with option data
-						dbg_printf("Process v9: [%u] No table for id %u -> Skip record\n", 
+						dbg_printf("Process v9: [%u] No table for id %u -> Skip record\n",
 							exporter->info.id, flowset_id);
 #ifdef DEVEL
 						skip = 1;
@@ -2195,7 +2207,7 @@ static int pkg_num = 0;
 		// next flowset
 		size_left -= flowset_length;
 
-	} // End of while 
+	} // End of while
 
 #ifdef DEVEL
 	if ( skip == 0 && processed_records != expected_records ) {
@@ -2205,7 +2217,7 @@ static int pkg_num = 0;
 #endif
 
 	return;
-	
+
 } /* End of Process_v9 */
 
 /*
@@ -2222,12 +2234,12 @@ int i;
 	v9_output_header->count 		= 0;
 	v9_output_header->source_id 	= htonl(1);
 	template_id						= NF9_MIN_RECORD_FLOWSET_ID;
-	peer->buff_ptr = (void *)((pointer_addr_t)v9_output_header + (pointer_addr_t)sizeof(netflow_v9_header_t));	
+	peer->buff_ptr = (void *)((pointer_addr_t)v9_output_header + (pointer_addr_t)sizeof(netflow_v9_header_t));
 
 	// set the max number of v9 tags, we support.
 	Max_num_v9_tags = 0;
 	for (i=1; v9_element_map[i].id != 0; i++ ) {
-		if ( v9_element_map[i].id != v9_element_map[i-1].id ) 
+		if ( v9_element_map[i].id != v9_element_map[i-1].id )
 			Max_num_v9_tags++;
 	}
 
@@ -2241,7 +2253,7 @@ uint32_t	i, count, record_length;
 	t = &output_templates;
 	// search for the template, which corresponds to our flags and extension map
 	while ( *t ) {
-		if ( (*t)->flags == flags &&  (*t)->extension_map == extension_map ) 
+		if ( (*t)->flags == flags &&  (*t)->extension_map == extension_map )
 			return *t;
 		t = &((*t)->next);
 	}
@@ -2263,7 +2275,7 @@ uint32_t	i, count, record_length;
 	record_length 	= 0;
 	fields = (*t)->template_flowset->fields;
 
-	// Fill the template flowset in the order of the common_record_t 
+	// Fill the template flowset in the order of the common_record_t
 	// followed be the available extensions
 	fields->record[count].type	 = htons(NF9_FIRST_SWITCHED);
 	fields->record[count].length = htons(4);
@@ -2353,7 +2365,7 @@ uint32_t	i, count, record_length;
 		record_length 				+= 4;
 	}
 	count++;
-	// process extension map 
+	// process extension map
 	i = 0;
 	while ( extension_map->ex_id[i] ) {
 		switch (extension_map->ex_id[i++]) {
@@ -2613,7 +2625,7 @@ uint32_t	i, count, record_length;
 	(*t)->flowset_length				 = 4 * (2+count); // + 2 for the header
 
 	// add proper padding for 32bit boundary
-	if ( ((*t)->flowset_length & 0x3 ) != 0 ) 
+	if ( ((*t)->flowset_length & 0x3 ) != 0 )
 		(*t)->flowset_length += (4 - ((*t)->flowset_length & 0x3 ));
 	(*t)->template_flowset->length  	 = htons((*t)->flowset_length);
 
@@ -2745,29 +2757,29 @@ uint16_t	icmp;
 				Put_val32(htonl(master_record->ip_nexthop.V4), peer->buff_ptr);
 				peer->buff_ptr = (void *)((pointer_addr_t)peer->buff_ptr + sizeof(uint32_t));
 				break;
-			case EX_NEXT_HOP_v6: 
+			case EX_NEXT_HOP_v6:
 				Put_val64(htonll(master_record->ip_nexthop.V6[0]), peer->buff_ptr);
 				peer->buff_ptr = (void *)((pointer_addr_t)peer->buff_ptr + sizeof(uint64_t));
 				Put_val64(htonll(master_record->ip_nexthop.V6[1]), peer->buff_ptr);
 				peer->buff_ptr = (void *)((pointer_addr_t)peer->buff_ptr + sizeof(uint64_t));
 				break;
-			case EX_NEXT_HOP_BGP_v4: 
+			case EX_NEXT_HOP_BGP_v4:
 				Put_val32(htonl(master_record->bgp_nexthop.V4), peer->buff_ptr);
 				peer->buff_ptr = (void *)((pointer_addr_t)peer->buff_ptr + sizeof(uint32_t));
 				break;
-			case EX_NEXT_HOP_BGP_v6: 
+			case EX_NEXT_HOP_BGP_v6:
 				Put_val64(htonll(master_record->bgp_nexthop.V6[0]), peer->buff_ptr);
 				peer->buff_ptr = (void *)((pointer_addr_t)peer->buff_ptr + sizeof(uint64_t));
 				Put_val64(htonll(master_record->bgp_nexthop.V6[1]), peer->buff_ptr);
 				peer->buff_ptr = (void *)((pointer_addr_t)peer->buff_ptr + sizeof(uint64_t));
 				break;
-			case EX_VLAN: 
+			case EX_VLAN:
 				Put_val16(htons(master_record->src_vlan), peer->buff_ptr);
 				peer->buff_ptr = (void *)((pointer_addr_t)peer->buff_ptr + sizeof(uint16_t));
 				Put_val16(htons(master_record->dst_vlan), peer->buff_ptr);
 				peer->buff_ptr = (void *)((pointer_addr_t)peer->buff_ptr + sizeof(uint16_t));
 				break;
-			case EX_OUT_PKG_4: 
+			case EX_OUT_PKG_4:
 				Put_val32(htonl((uint32_t)master_record->out_pkts), peer->buff_ptr);
 				peer->buff_ptr = (void *)((pointer_addr_t)peer->buff_ptr + sizeof(uint32_t));
 				break;
@@ -2953,7 +2965,7 @@ time_t		now = time(NULL);
 		}
 	} else {
 		// output buffer does not contain a data flowset
-		peer->buff_ptr = (void *)((pointer_addr_t)v9_output_header + (pointer_addr_t)sizeof(netflow_v9_header_t));	
+		peer->buff_ptr = (void *)((pointer_addr_t)v9_output_header + (pointer_addr_t)sizeof(netflow_v9_header_t));
 		last_flags = master_record->flags;
 		last_map	= master_record->map_ref;
 		template = GetOutputTemplate(last_flags, master_record->map_ref);
@@ -2963,7 +2975,7 @@ time_t		now = time(NULL);
 			if ( endwrite > peer->endp ) {
 				// this must never happen!
 				fprintf(stderr, "Panic: Software error in %s line %d\n", __FILE__, __LINE__);
-				fprintf(stderr, "buffer %p, buff_ptr %p template length %x, endbuff %p\n", 
+				fprintf(stderr, "buffer %p, buff_ptr %p template length %x, endbuff %p\n",
 					peer->send_buffer, peer->buff_ptr, template->flowset_length + (uint32_t)sizeof(data_flowset_t), peer->endp );
 				exit(255);
 			}
@@ -2991,7 +3003,7 @@ time_t		now = time(NULL);
 		data_flowset->length = htons(length);
 		if ( length == 4 ) {	// empty flowset
 			peer->buff_ptr = (void *)data_flowset;
-		} 
+		}
 		data_flowset = NULL;
 		v9_output_header->count = htons(record_count+template_count);
 		record_count   = 0;
@@ -3018,7 +3030,7 @@ generic_sampler_t *sampler;
 
 	dbg_printf("[%u] Insert Sampler: Exporter is 0x%llu\n", exporter->info.id, (long long unsigned)exporter);
 	if ( !exporter->sampler ) {
-		// no samplers so far 
+		// no samplers so far
 		sampler = (generic_sampler_t *)malloc(sizeof(generic_sampler_t));
 		if ( !sampler ) {
 			LogError( "Process_v9: Panic! malloc(): %s line %d: %s", __FILE__, __LINE__, strerror (errno));
@@ -3035,9 +3047,9 @@ generic_sampler_t *sampler;
 		exporter->sampler = sampler;
 
 		FlushInfoSampler(fs, &(sampler->info));
-		LogInfo( "Add new sampler: ID: %i, mode: %u, interval: %u\n", 
+		LogInfo( "Add new sampler: ID: %i, mode: %u, interval: %u\n",
 			id, mode, interval);
-		dbg_printf("Add new sampler: ID: %i, mode: %u, interval: %u\n", 
+		dbg_printf("Add new sampler: ID: %i, mode: %u, interval: %u\n",
 			id, mode, interval);
 
 	} else {
@@ -3046,7 +3058,7 @@ generic_sampler_t *sampler;
 			// test for update of existing sampler
 			if ( sampler->info.id == id ) {
 				// found same sampler id - update record
-				dbg_printf("Update existing sampler id: %i, mode: %u, interval: %u\n", 
+				dbg_printf("Update existing sampler id: %i, mode: %u, interval: %u\n",
 					id, mode, interval);
 
 				// we update only on changes
@@ -3054,7 +3066,7 @@ generic_sampler_t *sampler;
 					FlushInfoSampler(fs, &(sampler->info));
 					sampler->info.mode 	   = mode;
 					sampler->info.interval = interval;
-					LogInfo( "Update existing sampler id: %i, mode: %u, interval: %u\n", 
+					LogInfo( "Update existing sampler id: %i, mode: %u, interval: %u\n",
 						id, mode, interval);
 				} else {
 					dbg_printf("Sampler unchanged!\n");
@@ -3084,9 +3096,9 @@ generic_sampler_t *sampler;
 				FlushInfoSampler(fs, &(sampler->info));
 
 
-				LogInfo( "Append new sampler: ID: %u, mode: %u, interval: %u\n", 
+				LogInfo( "Append new sampler: ID: %u, mode: %u, interval: %u\n",
 					id, mode, interval);
-				dbg_printf("Append new sampler: ID: %u, mode: %u, interval: %u\n", 
+				dbg_printf("Append new sampler: ID: %u, mode: %u, interval: %u\n",
 					id, mode, interval);
 				break;
 			}
@@ -3095,7 +3107,6 @@ generic_sampler_t *sampler;
 			sampler = sampler->next;
 		}
 
-	} 
-	
-} // End of InsertSampler
+	}
 
+} // End of InsertSampler
