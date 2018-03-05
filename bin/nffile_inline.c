@@ -362,6 +362,13 @@ void		*p = (void *)input_record;
 				output_record->received = v.val.val64;
 				p = (void *)tpl->data;
 			} break;
+
+			case EX_PAN_USERID: {
+				tpl_ext_50_t *tpl = (tpl_ext_50_t *)p;
+				strncpy((void *)output_record->userid, (void *)tpl->userid, sizeof(output_record->userid));
+				output_record->userid[sizeof(output_record->userid)-1] = '\0';
+				p = (void *)tpl->data;			
+			} break;
 #ifdef NSEL
 			case EX_NSEL_COMMON: {
 				tpl_ext_37_t *tpl = (tpl_ext_37_t *)p;
