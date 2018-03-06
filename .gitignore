@@ -89,3 +89,6 @@
 /doc/html/
 /doc/man/
 /doc/xml/
+
+autogen.sh
+bin/flows
