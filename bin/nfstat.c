@@ -1,34 +1,34 @@
-/*  
+/*
  *  Copyright (c) 2017, Peter Haag
  *  Copyright (c) 2014, Peter Haag
  *  Copyright (c) 2009, Peter Haag
  *  Copyright (c) 2004-2008, SWITCH - Teleinformatikdienste fuer Lehre und Forschung
  *  All rights reserved.
- *  
- *  Redistribution and use in source and binary forms, with or without 
+ *
+ *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions are met:
- *  
- *   * Redistributions of source code must retain the above copyright notice, 
+ *
+ *   * Redistributions of source code must retain the above copyright notice,
  *     this list of conditions and the following disclaimer.
- *   * Redistributions in binary form must reproduce the above copyright notice, 
- *     this list of conditions and the following disclaimer in the documentation 
+ *   * Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
  *     and/or other materials provided with the distribution.
- *   * Neither the name of the author nor the names of its contributors may be 
- *     used to endorse or promote products derived from this software without 
+ *   * Neither the name of the author nor the names of its contributors may be
+ *     used to endorse or promote products derived from this software without
  *     specific prior written permission.
- *  
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
- *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
- *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
- *  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE 
- *  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
- *  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
- *  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
- *  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
- *  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
- *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ *  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *  POSSIBILITY OF SUCH DAMAGE.
- *  
+ *
  */
 
 #include "config.h"
@@ -81,291 +81,294 @@ struct StatParameter_s {
 	struct flow_element_s	element[2];		// what element(s) in flow record is used for statistics.
 											// need 2 elements to be able to get src/dst stats in one stat record
 	uint8_t					num_elem;		// number of elements used. 1 or 2
-	uint8_t					type;			// Type of element: Number, IP address, MAC address etc. 
+	uint8_t					type;			// Type of element: Number, IP address, MAC address etc.
 } StatParameters[] ={
 	// flow record stat
-	{ "record",	 "", 			
+	{ "record",	 "",
 		{ {0,0, 0,0},										{0,0,0,0} },
 			1, 0},
 
-	// 9 possible flow element stats 
-	{ "srcip",	 "Src IP Addr", 
+	// 9 possible flow element stats
+	{ "srcip",	 "Src IP Addr",
 		{ {OffsetSrcIPv6a, OffsetSrcIPv6b, MaskIPv6, 0},	{0,0,0,0} },
 			1, IS_IPADDR },
 
-	{ "dstip",	 "Dst IP Addr", 
+	{ "dstip",	 "Dst IP Addr",
 		{ {OffsetDstIPv6a, OffsetDstIPv6b, MaskIPv6, 0},	{0,0,0,0} },
 			1, IS_IPADDR },
 
-	{ "ip",	 	"IP Addr", 
+	{ "ip",	 	"IP Addr",
 		{ {OffsetSrcIPv6a, OffsetSrcIPv6b, MaskIPv6, 0},	{OffsetDstIPv6a, OffsetDstIPv6b, MaskIPv6} },
 			2, IS_IPADDR },
 
-	{ "nhip",	 "Nexthop IP", 
+	{ "nhip",	 "Nexthop IP",
 		{ {OffsetNexthopv6a, OffsetNexthopv6b, MaskIPv6, 0},	{0,0,0,0} },
 			1, IS_IPADDR },
 
-	{ "nhbip",	 "Nexthop BGP IP", 
+	{ "nhbip",	 "Nexthop BGP IP",
 		{ {OffsetBGPNexthopv6a, OffsetBGPNexthopv6b, MaskIPv6, 0},	{0,0,0,0} },
 			1, IS_IPADDR },
 
-	{ "router",	 "Router IP", 
+	{ "router",	 "Router IP",
 		{ {OffsetRouterv6a, OffsetRouterv6b, MaskIPv6, 0},	{0,0,0,0} },
 			1, IS_IPADDR },
 
-	{ "srcport", "Src Port", 
+	{ "srcport", "Src Port",
 		{ {0, OffsetPort, MaskSrcPort, ShiftSrcPort}, 		{0,0,0,0} },
 			1, IS_NUMBER },
 
-	{ "dstport", "Dst Port", 
+	{ "dstport", "Dst Port",
 		{ {0, OffsetPort, MaskDstPort, ShiftDstPort}, 		{0,0,0,0} },
 			1, IS_NUMBER },
 
-	{ "port", 	 "Port", 
+	{ "port", 	 "Port",
 		{ {0, OffsetPort, MaskSrcPort, ShiftSrcPort}, 		{0, OffsetPort, MaskDstPort, ShiftDstPort}},
 			2, IS_NUMBER },
 
-	{ "proto", 	 "Protocol", 
+	{ "proto", 	 "Protocol",
 		{ {0, OffsetProto, MaskProto, ShiftProto}, 			{0,0,0,0} },
 			1, IS_NUMBER },
 
-	{ "tos", 	 "Tos", 
+	{ "tos", 	 "Tos",
 		{ {0, OffsetTos, MaskTos, ShiftTos}, 				{0,0,0,0} },
 			1, IS_NUMBER },
 
-	{ "srctos",  "Tos", 
+	{ "srctos",  "Tos",
 		{ {0, OffsetTos, MaskTos, ShiftTos}, 				{0,0,0,0} },
 			1, IS_NUMBER },
 
-	{ "dsttos",	 "Dst Tos", 
+	{ "dsttos",	 "Dst Tos",
 		{ {0, OffsetDstTos, MaskDstTos, ShiftDstTos},  		{0,0,0,0} },
 			1, IS_NUMBER },
 
-	{ "dir",	 "Dir", 
+	{ "dir",	 "Dir",
 		{ {0, OffsetDir, MaskDir, ShiftDir},		  		{0,0,0,0} },
 			1, IS_NUMBER },
 
-	{ "srcas",	 "Src AS", 
+	{ "srcas",	 "Src AS",
 		{ {0, OffsetAS, MaskSrcAS, ShiftSrcAS},		  		{0,0,0,0} },
 			1, IS_NUMBER },
 
-	{ "dstas",	 "Dst AS", 
+	{ "dstas",	 "Dst AS",
 		{ {0, OffsetAS, MaskDstAS, ShiftDstAS},  	  		{0,0,0,0} },
 			1, IS_NUMBER },
 
-	{ "prevas",	 "Prev AS", 
+	{ "prevas",	 "Prev AS",
 		{ {0, OffsetBGPadj, MaskBGPadjPrev, ShiftBGPadjPrev},		  		{0,0,0,0} },
 			1, IS_NUMBER },
 
-	{ "nextas",	 "Next AS", 
+	{ "nextas",	 "Next AS",
 		{ {0, OffsetBGPadj, MaskBGPadjNext, ShiftBGPadjNext},  	  		{0,0,0,0} },
 			1, IS_NUMBER },
 
-	{ "as",	 	 "AS", 
+	{ "as",	 	 "AS",
 		{ {0, OffsetAS, MaskSrcAS, ShiftSrcAS},  	  		{0, OffsetAS, MaskDstAS, ShiftDstAS} },
 			2, IS_NUMBER },
 
-	{ "inif", 	 "Input If", 
+	{ "inif", 	 "Input If",
 		{ {0, OffsetInOut, MaskInput, ShiftInput}, 			{0,0,0,0} },
 			1, IS_NUMBER },
 
-	{ "outif", 	 "Output If", 
+	{ "outif", 	 "Output If",
 		{ {0, OffsetInOut, MaskOutput, ShiftOutput},		{0,0,0,0} },
 			1, IS_NUMBER },
 
-	{ "if", 	 "In/Out If", 
+	{ "if", 	 "In/Out If",
 		{ {0, OffsetInOut, MaskInput, ShiftInput},			{0, OffsetInOut, MaskOutput, ShiftOutput} },
 			2, IS_NUMBER },
 
-	{ "srcmask",	 "Src Mask", 
+	{ "srcmask",	 "Src Mask",
 		{ {0, OffsetMask, MaskSrcMask, ShiftSrcMask},  		{0,0,0,0} },
 			1, IS_NUMBER },
 
-	{ "dstmask",	 "Dst Mask", 
+	{ "dstmask",	 "Dst Mask",
 		{ {0, OffsetMask, MaskDstMask, ShiftDstMask},  		{0,0,0,0} },
 			1, IS_NUMBER },
 
-	{ "mask",	 "Mask", 
+	{ "mask",	 "Mask",
 		{ {0, OffsetMask, MaskSrcMask, ShiftSrcMask},  		{0, OffsetMask, MaskDstMask, ShiftDstMask} },
 			2, IS_NUMBER },
 
-	{ "srcvlan",	 "Src Vlan", 
+	{ "srcvlan",	 "Src Vlan",
 		{ {0, OffsetVlan, MaskSrcVlan, ShiftSrcVlan},  		{0,0,0,0} },
 			1, IS_NUMBER },
 
-	{ "dstvlan",	 "Dst Vlan", 
+	{ "dstvlan",	 "Dst Vlan",
 		{ {0, OffsetVlan, MaskDstVlan, ShiftDstVlan},  		{0,0,0,0} },
 			1, IS_NUMBER },
 
-	{ "vlan",	 "Vlan", 
+	{ "vlan",	 "Vlan",
 		{ {0, OffsetVlan, MaskSrcVlan, ShiftSrcVlan},  		{0, OffsetVlan, MaskDstVlan, ShiftDstVlan} },
 			2, IS_NUMBER },
 
-	{ "insrcmac",	 "In Src Mac", 
+	{ "insrcmac",	 "In Src Mac",
 		{ {0, OffsetInSrcMAC, MaskMac, 0},  		{0,0,0,0} },
 			1, IS_MACADDR },
 
-	{ "outdstmac",	 "Out Dst Mac", 
+	{ "outdstmac",	 "Out Dst Mac",
 		{ {0, OffsetOutDstMAC, MaskMac, 0},  		{0,0,0,0} },
 			1, IS_MACADDR },
 
-	{ "indstmac",	 "In Dst Mac", 
+	{ "indstmac",	 "In Dst Mac",
 		{ {0, OffsetInDstMAC, MaskMac, 0},  		{0,0,0,0} },
 			1, IS_MACADDR },
 
-	{ "outsrcmac",	 "Out Src Mac", 
+	{ "outsrcmac",	 "Out Src Mac",
 		{ {0, OffsetOutSrcMAC, MaskMac, 0},  		{0,0,0,0} },
 			1, IS_MACADDR },
 
-	{ "srcmac",	 "Src Mac", 
+	{ "srcmac",	 "Src Mac",
 		{ {0, OffsetInSrcMAC, MaskMac, 0},  		{0, OffsetOutSrcMAC, MaskMac, 0}},
 			2, IS_MACADDR },
 
-	{ "dstmac",	 "Dst Mac", 
+	{ "dstmac",	 "Dst Mac",
 		{ {0, OffsetOutDstMAC, MaskMac, 0},  		{0, OffsetInDstMAC, MaskMac, 0} },
 			2, IS_MACADDR },
 
-	{ "inmac",	 "In Src Mac", 
+	{ "inmac",	 "In Src Mac",
 		{ {0, OffsetInSrcMAC, MaskMac, 0},  		{0, OffsetInDstMAC, MaskMac, 0} },
 			1, IS_MACADDR },
 
-	{ "outmac",	 "Out Src Mac", 
+	{ "outmac",	 "Out Src Mac",
 		{ {0, OffsetOutSrcMAC, MaskMac, 0},  		{0, OffsetOutDstMAC, MaskMac, 0} },
 			2, IS_MACADDR },
 
-	{ "mpls1",	 " MPLS lab 1", 
+	{ "mpls1",	 " MPLS lab 1",
 		{ {0, OffsetMPLS12, MaskMPLSlabelOdd, 0}, 	{0,0,0,0} },
 			1, IS_MPLS_LBL },
 
-	{ "mpls2",	 " MPLS lab 2", 
+	{ "mpls2",	 " MPLS lab 2",
 		{ {0, OffsetMPLS12, MaskMPLSlabelEven, 0}, 	{0,0,0,0} },
 			1, IS_MPLS_LBL },
 
-	{ "mpls3",	 " MPLS lab 3", 
+	{ "mpls3",	 " MPLS lab 3",
 		{ {0, OffsetMPLS34, MaskMPLSlabelOdd, 0}, 	{0,0,0,0} },
 			1, IS_MPLS_LBL },
 
-	{ "mpls4",	 " MPLS lab 4", 
+	{ "mpls4",	 " MPLS lab 4",
 		{ {0, OffsetMPLS34, MaskMPLSlabelEven, 0}, 	{0,0,0,0} },
 			1, IS_MPLS_LBL },
 
-	{ "mpls5",	 " MPLS lab 5", 
+	{ "mpls5",	 " MPLS lab 5",
 		{ {0, OffsetMPLS56, MaskMPLSlabelOdd, 0}, 	{0,0,0,0} },
 			1, IS_MPLS_LBL },
 
-	{ "mpls6",	 " MPLS lab 6", 
+	{ "mpls6",	 " MPLS lab 6",
 		{ {0, OffsetMPLS56, MaskMPLSlabelEven, 0}, 	{0,0,0,0} },
 			1, IS_MPLS_LBL },
 
-	{ "mpls7",	 " MPLS lab 7", 
+	{ "mpls7",	 " MPLS lab 7",
 		{ {0, OffsetMPLS78, MaskMPLSlabelOdd, 0}, 	{0,0,0,0} },
 			1, IS_MPLS_LBL },
 
-	{ "mpls8",	 " MPLS lab 8", 
+	{ "mpls8",	 " MPLS lab 8",
 		{ {0, OffsetMPLS78, MaskMPLSlabelEven, 0}, 	{0,0,0,0} },
 			1, IS_MPLS_LBL },
 
-	{ "mpls9",	 " MPLS lab 9", 
+	{ "mpls9",	 " MPLS lab 9",
 		{ {0, OffsetMPLS910, MaskMPLSlabelOdd, 0}, 	{0,0,0,0} },
 			1, IS_MPLS_LBL },
 
-	{ "mpls10",	 "MPLS lab 10", 
+	{ "mpls10",	 "MPLS lab 10",
 		{ {0, OffsetMPLS910, MaskMPLSlabelEven, 0}, {0,0,0,0} },
 			1, IS_MPLS_LBL },
 
-	{ "cl",	 "Client Latency", 
+	{ "cl",	 "Client Latency",
 		{ {0, OffsetClientLatency, MaskLatency, 0}, {0,0,0,0} },
 			1, IS_LATENCY },
 
-	{ "sl",	 "Server Latency", 
+	{ "sl",	 "Server Latency",
 		{ {0, OffsetServerLatency, MaskLatency, 0}, {0,0,0,0} },
 			1, IS_LATENCY },
 
-	{ "al",	 "  Appl Latency", 
+	{ "al",	 "  Appl Latency",
 		{ {0, OffsetAppLatency, MaskLatency, 0}, {0,0,0,0} },
 			1, IS_LATENCY },
 
+	{ "userid",	 "  User ID",
+				{ {0, OffsetUserID, MaskUserID, 0}, {0,0,0,0} },
+					1, IS_HEX },
 #ifdef NSEL
-	{ "event", " Event", 
+	{ "event", " Event",
 		{ {0, OffsetConnID, MaskFWevent, ShiftFWevent}, 		{0,0,0,0} },
 			1, IS_EVENT},
 
-	{ "nevent", " Event", 
+	{ "nevent", " Event",
 		{ {0, OffsetConnID, MaskFWevent, ShiftFWevent}, 		{0,0,0,0} },
 			1, IS_EVENT},
 
-	{ "xevent", "X-Event", 
+	{ "xevent", "X-Event",
 		{ {0, OffsetConnID, MaskFWXevent, ShiftFWXevent}, 		{0,0,0,0} },
 			1, IS_NUMBER},
 
-	{ "xsrcip",	 "X-Src IP Addr", 
+	{ "xsrcip",	 "X-Src IP Addr",
 		{ {OffsetXLATESRCv6a, OffsetXLATESRCv6b, MaskIPv6, 0},	{0,0,0,0} },
 			1, IS_IPADDR},
 
-	{ "xdstip",	 "X-Dst IP Addr", 
+	{ "xdstip",	 "X-Dst IP Addr",
 		{ {OffsetXLATEDSTv6a, OffsetXLATEDSTv6b, MaskIPv6, 0},	{0,0,0,0} },
 			1, IS_IPADDR},
 
-	{ "xsrcport", " X-Src Port", 
+	{ "xsrcport", " X-Src Port",
 		{ {0, OffsetXLATEPort, MaskXLATESRCPORT, ShiftXLATESRCPORT}, 		{0,0,0,0} },
 			1, IS_NUMBER},
 
-	{ "xdstport", " X-Dst Port", 
+	{ "xdstport", " X-Dst Port",
 		{ {0, OffsetXLATEPort, MaskXLATEDSTPORT, ShiftXLATEDSTPORT}, 		{0,0,0,0} },
 			1, IS_NUMBER},
 
-	{ "iacl", "Ingress ACL", 
+	{ "iacl", "Ingress ACL",
 		{ {0, OffsetIngressAclId, MaskIngressAclId, ShiftIngressAclId}, 		{0,0,0,0} },
 			1, IS_HEX},
 
-	{ "iace", "Ingress ACE", 
+	{ "iace", "Ingress ACE",
 		{ {0, OffsetIngressAceId, MaskIngressAceId, ShiftIngressAceId}, 		{0,0,0,0} },
 			1, IS_HEX},
 
-	{ "ixace", "Ingress xACE", 
+	{ "ixace", "Ingress xACE",
 		{ {0, OffsetIngressGrpId, MaskIngressGrpId, ShiftIngressGrpId}, 		{0,0,0,0} },
 			1, IS_HEX},
 
-	{ "eacl", "Egress ACL", 
+	{ "eacl", "Egress ACL",
 		{ {0, OffsetEgressAclId, MaskEgressAclId, ShiftEgressAclId}, 		{0,0,0,0} },
 			1, IS_HEX},
 
-	{ "eace", "Egress ACE", 
+	{ "eace", "Egress ACE",
 		{ {0, OffsetEgressAceId, MaskEgressAceId, ShiftEgressAceId}, 		{0,0,0,0} },
 			1, IS_HEX},
 
-	{ "exace", "Egress xACE", 
+	{ "exace", "Egress xACE",
 		{ {0, OffsetEgressGrpId, MaskEgressGrpId, ShiftEgressGrpId}, 		{0,0,0,0} },
 			1, IS_HEX},
 
-	{ "ivrf", " I-vrf-ID", 
+	{ "ivrf", " I-vrf-ID",
 		{ {0, OffsetIVRFID, MaskIVRFID, ShiftIVRFID}, 		{0,0,0,0} },
 			1, IS_NUMBER},
 
-	{ "evrf", " E-vrf-ID", 
+	{ "evrf", " E-vrf-ID",
 		{ {0, OffsetEVRFID, MaskEVRFID, ShiftEVRFID}, 		{0,0,0,0} },
 			1, IS_NUMBER},
 
 // keep the following stats strings for compate v1.6.10 -> merged NSEL
-	{ "nsrcip",	 "X-Src IP Addr", 
+	{ "nsrcip",	 "X-Src IP Addr",
 		{ {OffsetXLATESRCv6a, OffsetXLATESRCv6b, MaskIPv6, 0},	{0,0,0,0} },
 			1, IS_IPADDR},
 
-	{ "ndstip",	 "X-Dst IP Addr", 
+	{ "ndstip",	 "X-Dst IP Addr",
 		{ {OffsetXLATEDSTv6a, OffsetXLATEDSTv6b, MaskIPv6, 0},	{0,0,0,0} },
 			1, IS_IPADDR},
 
-	{ "nsrcport", " X-Src Port", 
+	{ "nsrcport", " X-Src Port",
 		{ {0, OffsetXLATEPort, MaskXLATESRCPORT, ShiftXLATESRCPORT}, 		{0,0,0,0} },
 			1, IS_NUMBER},
 
-	{ "ndstport", " X-Dst Port", 
+	{ "ndstport", " X-Dst Port",
 		{ {0, OffsetXLATEPort, MaskXLATEDSTPORT, ShiftXLATEDSTPORT}, 		{0,0,0,0} },
 			1, IS_NUMBER},
 
 #endif
 
-	{ NULL, 	 NULL, 			
+	{ NULL, 	 NULL,
 		{ {0,0,0,0},	{0,0,0,0} },
 			1, 0 }
 };
@@ -381,7 +384,7 @@ struct StatRequest_s {
 } StatRequest[MaxStats];		// This number should do it for a single run
 
 
-/* 
+/*
  * pps, bps and bpp are not directly available in the flow/stat record
  * therefore we need a function to calculate these values
  */
@@ -411,7 +414,7 @@ static inline uint64_t	bpp_element(StatRecord_t *record, int inout);
 #define ASCENDING 1
 #define DESCENDING 0
 struct order_mode_s {
-	char *string;	// Stat name 
+	char *string;	// Stat name
 	int	 inout;		// use IN or OUT or INOUT packets/bytes
 	int	 direction;	// ascending or descending
 	order_proc_record_t  record_function;	// Function to call for record stats
@@ -457,7 +460,7 @@ static inline StatRecord_t *stat_hash_insert(uint64_t *value, uint8_t prot, int 
 
 static void Expand_StatTable_Blocks(int hash_num);
 
-static inline void PrintSortedFlowcache(SortElement_t *SortList, uint32_t maxindex, int limit_count, int GuessFlowDirection, 
+static inline void PrintSortedFlowcache(SortElement_t *SortList, uint32_t maxindex, int limit_count, int GuessFlowDirection,
 	printer_t print_record, int tag, int ascending, extension_map_list_t *extension_map_list );
 
 static void PrintStatLine(stat_record_t	*stat, uint32_t plain_numbers, StatRecord_t *StatData, int type, int order_proto, int tag, int inout);
@@ -548,13 +551,13 @@ uint64_t bytes = bytes_record(record, inout);
 } // End of bpp_record
 
 static uint64_t	tstart_record(FlowTableRecord_t *record, int inout) {
-	
+
 	return 1000LL * record->flowrecord.first + record->flowrecord.msec_first;
 
 } // End of tstart_record
 
 static uint64_t	tend_record(FlowTableRecord_t *record, int inout) {
-	
+
 	return 1000LL * record->flowrecord.last + record->flowrecord.msec_last;
 
 } // End of tend_record
@@ -626,7 +629,7 @@ uint64_t bytes = bytes_element(record, inout);
 static inline int TimeMsec_CMP(time_t t1, uint16_t offset1, time_t t2, uint16_t offset2 ) {
     if ( t1 > t2 )
         return 1;
-    if ( t2 > t1 ) 
+    if ( t2 > t1 )
         return 2;
     // else t1 == t2 - offset is now relevant
     if ( offset1 > offset2 )
@@ -792,7 +795,7 @@ int		 hash_num;
 			fprintf(stderr, "malloc() error in %s line %d: %s\n", __FILE__, __LINE__, strerror(errno) );
 			return 0;
 		}
-	
+
 		StatTable[hash_num].NumBlocks = 1;
 		StatTable[hash_num].MaxBlocks = MaxMemBlocks;
 		StatTable[hash_num].NextBlock = 0;
@@ -812,12 +815,12 @@ int		 hash_num;
 void Dispose_StatTable() {
 unsigned int i, hash_num;
 
-	if ( !initialised ) 
+	if ( !initialised )
 		return;
 
 	for ( hash_num=0; hash_num<NumStats; hash_num++ ) {
 		free((void *)StatTable[hash_num].bucket);
-		for ( i=0; i<StatTable[hash_num].NumBlocks; i++ ) 
+		for ( i=0; i<StatTable[hash_num].NumBlocks; i++ )
 			free((void *)StatTable[hash_num].memblock[i]);
 		free((void *)StatTable[hash_num].memblock);
 	}
@@ -867,7 +870,7 @@ int i=0;
 
 	s = strdup(str);
 	q = strchr(s, '/');
-	if ( q ) 
+	if ( q )
 		*q = 0;
 
 	*order_proto = 0;
@@ -891,7 +894,7 @@ int i=0;
 	// if so - initialize type and order_bits
  	if ( StatParameters[i].statname ) {
 		*StatType = i;
-		if ( strncasecmp(StatParameters[i].statname, "proto", 16) == 0 ) 
+		if ( strncasecmp(StatParameters[i].statname, "proto", 16) == 0 )
 			*order_proto = 1;
 	} else {
 		free(s);
@@ -927,7 +930,7 @@ uint32_t order_bits;
 		if ( q && !multiple_orders ) {
 			return -1;
 		}
-		if ( q ) 
+		if ( q )
 			*q = 0;
 		i = 0;
 		while ( order_mode[i].string ) {
@@ -948,7 +951,7 @@ uint32_t order_bits;
 
 		s = ++q;
 	}
-	
+
 	// not reached
 	return 1;
 
@@ -1005,7 +1008,7 @@ static void Expand_StatTable_Blocks(int hash_num) {
 			exit(250);
 		}
 	}
-	StatTable[hash_num].memblock[StatTable[hash_num].NumBlocks] = 
+	StatTable[hash_num].memblock[StatTable[hash_num].NumBlocks] =
 			(StatRecord_t *)calloc(StatTable[hash_num].Prealloc, sizeof(StatRecord_t));
 
 	if ( !StatTable[hash_num].memblock[StatTable[hash_num].NumBlocks] ) {
@@ -1032,12 +1035,12 @@ StatRecord_t	*record;
 	record->prot		= prot;
 
 	index = value[1] & StatTable[hash_num].IndexMask;
-	if ( StatTable[hash_num].bucket[index] == NULL ) 
+	if ( StatTable[hash_num].bucket[index] == NULL )
 		StatTable[hash_num].bucket[index] = record;
 	else
 		StatTable[hash_num].bucketcache[index]->next = record;
 	StatTable[hash_num].bucketcache[index] = record;
-	
+
 	return record;
 
 } // End of stat_hash_insert
@@ -1066,7 +1069,7 @@ int	j, i;
 			offset = StatParameters[stat].element[i].offset0;
 			value[i][0] = offset ? ((uint64_t *)flow_record)[offset] : 0;
 
-			/* 
+			/*
 			 * make sure each flow is counted once only
 			 * if src and dst have the same values, count it once only
 			 */
@@ -1079,7 +1082,7 @@ int	j, i;
 				stat_record->counter[INPACKETS]  += flow_record->dPkts;
 				stat_record->counter[OUTBYTES] 	 += flow_record->out_bytes;
 				stat_record->counter[OUTPACKETS] += flow_record->out_pkts;
-		
+
 				if ( TimeMsec_CMP(flow_record->first, flow_record->msec_first, stat_record->first, stat_record->msec_first) == 2) {
 					stat_record->first 		= flow_record->first;
 					stat_record->msec_first = flow_record->msec_first;
@@ -1092,7 +1095,7 @@ int	j, i;
 
 			} else {
 				stat_record = stat_hash_insert(value[i], flow_record->prot, j);
-		
+
 				stat_record->counter[INBYTES]   = flow_record->dOctets;
 				stat_record->counter[INPACKETS]	= flow_record->dPkts;
 				stat_record->counter[OUTBYTES] 	= flow_record->out_bytes;
@@ -1139,7 +1142,7 @@ struct tm	*tbuff;
 				inet_ntop(AF_INET6, _key, valstr, sizeof(valstr));
 				if ( ! Getv6Mode() )
 					condense_v6(valstr);
-	
+
 			} else {	// IPv4
 				uint32_t	ipv4;
 				ipv4 = htonl(StatData->stat_key[1]);
@@ -1156,9 +1159,9 @@ struct tm	*tbuff;
 			} break;
 		case IS_MPLS_LBL: {
 			snprintf(valstr, 40, "%llu", (unsigned long long)StatData->stat_key[1]);
-			snprintf(valstr, 40,"%8llu-%1llu-%1llu", 
-				(unsigned long long)StatData->stat_key[1] >> 4 , 
-				((unsigned long long)StatData->stat_key[1] & 0xF ) >> 1, 
+			snprintf(valstr, 40,"%8llu-%1llu-%1llu",
+				(unsigned long long)StatData->stat_key[1] >> 4 ,
+				((unsigned long long)StatData->stat_key[1] & 0xF ) >> 1,
 				(unsigned long long)StatData->stat_key[1] & 1);
 			} break;
 		case IS_LATENCY: {
@@ -1183,7 +1186,7 @@ struct tm	*tbuff;
 					break;
 				default:
 					s = "UNKNOWN";
-			}			
+			}
 			snprintf(valstr, 40, "      %6s", s);
 			} break;
 #endif
@@ -1216,7 +1219,7 @@ struct tm	*tbuff;
 
 	duration = StatData->last - StatData->first;
 	duration += ((double)StatData->msec_last - (double)StatData->msec_first) / 1000.0;
-	
+
 	if ( duration != 0 ) {
 		pps  = (uint64_t)((double)count_packets / duration);
 		bps  = (uint64_t)((double)(8 * count_bytes) / duration);
@@ -1249,8 +1252,8 @@ struct tm	*tbuff;
 	}
 
 	if ( Getv6Mode() && ( type == IS_IPADDR ) )
-		printf("%s.%03u %9.3f %s %s%39s %8s(%4.1f) %8s(%4.1f) %8s(%4.1f) %8s %8s %5u\n", 
-				datestr, StatData->msec_first, duration, proto, tag_string, valstr, 
+		printf("%s.%03u %9.3f %s %s%39s %8s(%4.1f) %8s(%4.1f) %8s(%4.1f) %8s %8s %5u\n",
+				datestr, StatData->msec_first, duration, proto, tag_string, valstr,
 				flows_str, flows_percent, packets_str, packets_percent, byte_str,
 				bytes_percent, pps_str, bps_str, bpp );
 	else {
@@ -1287,10 +1290,10 @@ int			af;
     	sa[1] = _key[0] & 0xffffffffLL;
     	sa[2] = ( _key[1] >> 32 ) & 0xffffffffLL;
     	sa[3] = _key[1] & 0xffffffffLL;
-	} 
+	}
 	duration = StatData->last - StatData->first;
 	duration += ((double)StatData->msec_last - (double)StatData->msec_first) / 1000.0;
-	
+
 	count_flows = flows_element(StatData, inout);
 	count_packets = packets_element(StatData, inout);
 	count_bytes = bytes_element(StatData, inout);
@@ -1312,13 +1315,13 @@ int			af;
 
 	if ( type == IS_IPADDR )
 		printf("%i|%u|%u|%u|%u|%u|%u|%u|%u|%u|%llu|%llu|%llu|%u|%u|%u\n",
-				af, StatData->first, StatData->msec_first ,StatData->last, StatData->msec_last, StatData->prot, 
+				af, StatData->first, StatData->msec_first ,StatData->last, StatData->msec_last, StatData->prot,
 				sa[0], sa[1], sa[2], sa[3], (long long unsigned)count_flows,
 				(long long unsigned)count_packets, (long long unsigned)count_bytes,
 				pps, bps, bpp);
 	else
 		printf("%i|%u|%u|%u|%u|%u|%llu|%llu|%llu|%llu|%u|%u|%u\n",
-				af, StatData->first, StatData->msec_first ,StatData->last, StatData->msec_last, StatData->prot, 
+				af, StatData->first, StatData->msec_first ,StatData->last, StatData->msec_last, StatData->prot,
 				(long long unsigned)_key[1], (long long unsigned)count_flows,
 				(long long unsigned)count_packets, (long long unsigned)count_bytes,
 				pps, bps, bpp);
@@ -1346,7 +1349,7 @@ struct tm	*tbuff;
 				_key[0] = htonll(StatData->stat_key[0]);
 				_key[1] = htonll(StatData->stat_key[1]);
 				inet_ntop(AF_INET6, _key, valstr, sizeof(valstr));
-	
+
 			} else {	// IPv4
 				uint32_t	ipv4;
 				ipv4 = htonl(StatData->stat_key[1]);
@@ -1363,9 +1366,9 @@ struct tm	*tbuff;
 			} break;
 		case IS_MPLS_LBL: {
 			snprintf(valstr, 40, "%llu", (unsigned long long)StatData->stat_key[1]);
-			snprintf(valstr, 40,"%8llu-%1llu-%1llu", 
-				(unsigned long long)StatData->stat_key[1] >> 4 , 
-				((unsigned long long)StatData->stat_key[1] & 0xF ) >> 1, 
+			snprintf(valstr, 40,"%8llu-%1llu-%1llu",
+				(unsigned long long)StatData->stat_key[1] >> 4 ,
+				((unsigned long long)StatData->stat_key[1] & 0xF ) >> 1,
 				(unsigned long long)StatData->stat_key[1] & 1);
 			} break;
 	}
@@ -1382,7 +1385,7 @@ struct tm	*tbuff;
 
 	duration = StatData->last - StatData->first;
 	duration += ((double)StatData->msec_last - (double)StatData->msec_first) / 1000.0;
-	
+
 	if ( duration != 0 ) {
 		pps  = (uint64_t)((double)count_packets / duration);
 		bps  = (uint64_t)((double)(8 * count_bytes) / duration);
@@ -1461,7 +1464,7 @@ char				*string;
 		// preset SortList table - still unsorted
 		for ( i=0; i<FlowTable->IndexMask; i++ ) {
 			r = FlowTable->bucket[i];
-			if ( !r ) 
+			if ( !r )
 				continue;
 
 			// foreach elem in this bucket
@@ -1483,7 +1486,7 @@ char				*string;
 						continue;
 					}
 				}
-				
+
 				SortList[c].count  = order_mode[PrintOrder].record_function(r, order_mode[PrintOrder].inout);
 				SortList[c].record = (void *)r;
 				c++;
@@ -1496,7 +1499,7 @@ char				*string;
 		if ( c >= 2 )
  			heapSort(SortList, c, 0);
 
-		PrintSortedFlowcache(SortList, maxindex, topN, GuessDir, 
+		PrintSortedFlowcache(SortList, maxindex, topN, GuessDir,
 			print_record, tag, order_mode[PrintOrder].direction, extension_map_list);
 
 	} else {
@@ -1588,14 +1591,14 @@ uint32_t			maxindex, c;
 	// preset the first stat
 	for ( order_index=0; order_mode[order_index].string != NULL; order_index++ ) {
 		unsigned int order_bit = 1 << order_index;
-		if ( print_order_bits & order_bit ) 
+		if ( print_order_bits & order_bit )
 			break;
 	}
 
 	// preset SortList table - still unsorted
 	for ( i=0; i<FlowTable->IndexMask; i++ ) {
 		r = FlowTable->bucket[i];
-		if ( !r ) 
+		if ( !r )
 			continue;
 
 		// foreach elem in this bucket
@@ -1617,7 +1620,7 @@ uint32_t			maxindex, c;
 					continue;
 				}
 			}
-			
+
 			// As we touch each flow in the list here, fill in the values for the first requested stat
 			// often, no more than one stat is requested anyway. This saves time
 			SortList[c].count  = order_mode[order_index].record_function(r, order_mode[order_index].inout);
@@ -1629,7 +1632,7 @@ uint32_t			maxindex, c;
 
 	maxindex = c;
 
-	if ( !(quiet || cvs_output) ) 
+	if ( !(quiet || cvs_output) )
 		printf("Aggregated flows %u\n", maxindex);
 
 	if ( c >= 2 )
@@ -1641,7 +1644,7 @@ uint32_t			maxindex, c;
 			else
 				printf("Top flows ordered by %s:\n", order_mode[order_index].string);
 		}
-		if ( record_header ) 
+		if ( record_header )
 			printf("%s\n", record_header);
 	}
 
@@ -1664,12 +1667,12 @@ uint32_t			maxindex, c;
  				heapSort(SortList, maxindex, topN);
 			if ( !quiet ) {
 				if ( !cvs_output ) {
-					if ( topN != 0 ) 
+					if ( topN != 0 )
 						printf("Top %i flows ordered by %s:\n", topN, order_mode[order_index].string);
 					else
 						printf("Top flows ordered by %s:\n", order_mode[order_index].string);
 				}
-				if ( record_header ) 
+				if ( record_header )
 					printf("%s\n", record_header);
 			}
 			PrintSortedFlowcache(SortList, maxindex, topN, 0, print_record, tag, DESCENDING, extension_map_list);
@@ -1680,7 +1683,7 @@ uint32_t			maxindex, c;
 
 } // End of PrintFlowStat
 
-static inline void PrintSortedFlowcache(SortElement_t *SortList, uint32_t maxindex, int limit_count, int GuessFlowDirection, 
+static inline void PrintSortedFlowcache(SortElement_t *SortList, uint32_t maxindex, int limit_count, int GuessFlowDirection,
 	printer_t print_record, int tag, int ascending, extension_map_list_t *extension_map_list ) {
 hash_FlowTable *FlowTable;
 master_record_t		*aggr_record_mask;
@@ -1715,7 +1718,7 @@ int	i, max;
 		flow_record->out_pkts 	= r->counter[OUTPACKETS];
 		flow_record->out_bytes 	= r->counter[OUTBYTES];
 		flow_record->aggr_flows 	= r->counter[FLOWS];
-		
+
 		// apply IP mask from aggregation, to provide a pretty output
 		if ( FlowTable->has_masks ) {
 			flow_record->V6.srcaddr[0] &= FlowTable->IPmask[0];
@@ -1762,14 +1765,14 @@ int32_t 		i, j, hash_num, order_index;
 
 				// this output formating is pretty ugly - and needs to be cleaned up - improved
 				if ( !pipe_output && !cvs_output && !quiet  ) {
-					if ( topN != 0 ) 
-						printf("Top %i %s ordered by %s:\n", 
+					if ( topN != 0 )
+						printf("Top %i %s ordered by %s:\n",
 							topN, StatParameters[stat].HeaderInfo, order_mode[order_index].string);
 					else
-						printf("Top %s ordered by %s:\n", 
+						printf("Top %s ordered by %s:\n",
 							StatParameters[stat].HeaderInfo, order_mode[order_index].string);
 					//      2005-07-26 20:08:59.197 1553.730      ss    65255   203435   52.2 M      130   281636   268
-					if ( Getv6Mode() && (type == IS_IPADDR )) 
+					if ( Getv6Mode() && (type == IS_IPADDR ))
 						printf("Date first seen          Duration Proto %39s    Flows(%%)     Packets(%%)       Bytes(%%)         pps      bps   bpp\n",
 							StatParameters[stat].HeaderInfo);
 					else
@@ -1795,14 +1798,14 @@ int32_t 		i, j, hash_num, order_index;
 						//break;
 
 					// Again - ugly output formating - needs to be cleaned up
-					if ( pipe_output ) 
-						PrintPipeStatLine((StatRecord_t *)topN_element_list[i].record, type, 
+					if ( pipe_output )
+						PrintPipeStatLine((StatRecord_t *)topN_element_list[i].record, type,
 							StatRequest[hash_num].order_proto, tag, order_mode[order_index].inout);
-					else if ( cvs_output ) 
-						PrintCvsStatLine(sum_stat, (StatRecord_t *)topN_element_list[i].record, type, 
+					else if ( cvs_output )
+						PrintCvsStatLine(sum_stat, (StatRecord_t *)topN_element_list[i].record, type,
 							StatRequest[hash_num].order_proto, tag, order_mode[order_index].inout);
 					else
-						PrintStatLine(sum_stat, limitflows, (StatRecord_t *)topN_element_list[i].record, 
+						PrintStatLine(sum_stat, limitflows, (StatRecord_t *)topN_element_list[i].record,
 							type, StatRequest[hash_num].order_proto, tag, order_mode[order_index].inout);
 				}
 				free((void *)topN_element_list);
@@ -1862,9 +1865,9 @@ uint32_t	   		c, maxindex;
 	}
 	*count = c;
 	// printf ("Sort %u flows\n", c);
-	
+
 	/*
-	for ( i = 0; i < maxindex; i++ ) 
+	for ( i = 0; i < maxindex; i++ )
 		printf("%i, %llu %llu\n", i, topN_list[i].count, topN_list[i].record);
 	*/
 
@@ -1873,12 +1876,12 @@ uint32_t	   		c, maxindex;
  		heapSort(topN_list, c, topN);
 
 	/*
-	for ( i = 0; i < maxindex; i++ ) 
+	for ( i = 0; i < maxindex; i++ )
 		printf("%i, %llu %llu\n", i, topN_list[i].count, topN_list[i].record);
 	*/
 
 	return topN_list;
-	
+
 } // End of StatTopN
 
 

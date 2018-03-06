@@ -2089,6 +2089,8 @@ typedef struct master_record_s {
  */
 
 #define OffsetUserID  (offsetof(master_record_t, userid) >> 3)
+#define MaskUserID 0xFFFFFFFFFFFFFFFFLL
+
 	char userid[64];
 
 #ifdef USER_EXTENSION_1
