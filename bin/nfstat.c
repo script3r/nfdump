@@ -73,7 +73,7 @@ struct flow_element_s {
 	uint32_t	shift;		// number of bits to shift right to get final value
 };
 
-enum { IS_NUMBER = 1, IS_IPADDR, IS_MACADDR, IS_MPLS_LBL, IS_LATENCY, IS_EVENT, IS_HEX};
+enum { IS_NUMBER = 1, IS_IPADDR, IS_MACADDR, IS_MPLS_LBL, IS_LATENCY, IS_EVENT, IS_HEX, IS_STRING};
 
 struct StatParameter_s {
 	char					*statname;		// name of -s option
@@ -287,7 +287,7 @@ struct StatParameter_s {
 
 	{ "userid",	 "  User ID",
 				{ {0, OffsetUserID, MaskUserID, 0}, {0,0,0,0} },
-					1, IS_HEX },
+					1, IS_STRING },
 #ifdef NSEL
 	{ "event", " Event",
 		{ {0, OffsetConnID, MaskFWevent, ShiftFWevent}, 		{0,0,0,0} },
@@ -1113,7 +1113,7 @@ int	j, i;
 } // End of AddStat
 
 static void PrintStatLine(stat_record_t	*stat, uint32_t plain_numbers, StatRecord_t *StatData, int type, int order_proto, int tag, int inout) {
-char		proto[16], valstr[40], datestr[64];
+char		proto[16], valstr[128], datestr[64];
 char		flows_str[NUMBER_STRING_SIZE], byte_str[NUMBER_STRING_SIZE], packets_str[NUMBER_STRING_SIZE];
 char		pps_str[NUMBER_STRING_SIZE], bps_str[NUMBER_STRING_SIZE];
 char tag_string[2];
@@ -1131,7 +1131,7 @@ struct tm	*tbuff;
 		case NONE:
 			break;
 		case IS_NUMBER:
-			snprintf(valstr, 40, "%llu", (unsigned long long)StatData->stat_key[1]);
+			snprintf(valstr, sizeof(valstr), "%llu", (unsigned long long)StatData->stat_key[1]);
 			break;
 		case IS_IPADDR:
 			tag_string[0] = tag ? TAG_CHAR : '\0';
@@ -1155,17 +1155,17 @@ struct tm	*tbuff;
 			for ( i=0; i<6; i++ ) {
 				mac[i] = ((unsigned long long)StatData->stat_key[1] >> ( i*8 )) & 0xFF;
 			}
-			snprintf(valstr, 40, "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x", mac[5], mac[4], mac[3], mac[2], mac[1], mac[0]);
+			snprintf(valstr, sizeof(valstr), "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x", mac[5], mac[4], mac[3], mac[2], mac[1], mac[0]);
 			} break;
 		case IS_MPLS_LBL: {
-			snprintf(valstr, 40, "%llu", (unsigned long long)StatData->stat_key[1]);
-			snprintf(valstr, 40,"%8llu-%1llu-%1llu",
+			snprintf(valstr, sizeof(valstr), "%llu", (unsigned long long)StatData->stat_key[1]);
+			snprintf(valstr, sizeof(valstr),"%8llu-%1llu-%1llu",
 				(unsigned long long)StatData->stat_key[1] >> 4 ,
 				((unsigned long long)StatData->stat_key[1] & 0xF ) >> 1,
 				(unsigned long long)StatData->stat_key[1] & 1);
 			} break;
 		case IS_LATENCY: {
-			snprintf(valstr, 40, "      %9.3f", (double)((double)StatData->stat_key[1]/1000.0));
+			snprintf(valstr, sizeof(valstr), "      %9.3f", (double)((double)StatData->stat_key[1]/1000.0));
 			} break;
 #ifdef NSEL
 		case IS_EVENT: {
@@ -1187,15 +1187,19 @@ struct tm	*tbuff;
 				default:
 					s = "UNKNOWN";
 			}
-			snprintf(valstr, 40, "      %6s", s);
+			snprintf(valstr, sizeof(valstr), "      %6s", s);
 			} break;
 #endif
 		case IS_HEX: {
-			snprintf(valstr, 40, "0x%llx", (unsigned long long)StatData->stat_key[1]);
+			snprintf(valstr, sizeof(valstr), "0x%llx", (unsigned long long)StatData->stat_key[1]);
+		} break;
+
+		case IS_STRING: {
+			snprintf(valstr, sizeof(valstr), "%llu", StatData->stat_key[1]);
 		} break;
 	}
 
-	valstr[39] = 0;
+	valstr[sizeof(valstr)-1] = 0;
 	scale = plain_numbers == 0;
 	count_flows = StatData->counter[FLOWS];
 	count_packets = packets_element(StatData, inout);
@@ -1329,7 +1333,7 @@ int			af;
 } // End of PrintPipeStatLine
 
 static void PrintCvsStatLine(stat_record_t	*stat, StatRecord_t *StatData, int type, int order_proto, int tag, int inout) {
-char		proto[16], valstr[40], datestr1[64], datestr2[64];
+char		proto[16], valstr[64], datestr1[64], datestr2[64];
 uint64_t	count_flows, count_packets, count_bytes;
 double		duration, flows_percent, packets_percent, bytes_percent;
 uint32_t	i, bpp;
@@ -1341,7 +1345,7 @@ struct tm	*tbuff;
 		case NONE:
 			break;
 		case IS_NUMBER:
-			snprintf(valstr, 40, "%llu", (unsigned long long)StatData->stat_key[1]);
+			snprintf(valstr, sizeof(valstr), "%llu", (unsigned long long)StatData->stat_key[1]);
 			break;
 		case IS_IPADDR:
 			if ( (StatData->record_flags & 0x1) != 0 ) { // IPv6
@@ -1362,18 +1366,18 @@ struct tm	*tbuff;
 			for ( i=0; i<6; i++ ) {
 				mac[i] = ((unsigned long long)StatData->stat_key[1] >> ( i*8 )) & 0xFF;
 			}
-			snprintf(valstr, 40, "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x", mac[5], mac[4], mac[3], mac[2], mac[1], mac[0]);
+			snprintf(valstr, sizeof(valstr), "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x", mac[5], mac[4], mac[3], mac[2], mac[1], mac[0]);
 			} break;
 		case IS_MPLS_LBL: {
-			snprintf(valstr, 40, "%llu", (unsigned long long)StatData->stat_key[1]);
-			snprintf(valstr, 40,"%8llu-%1llu-%1llu",
+			snprintf(valstr, sizeof(valstr), "%llu", (unsigned long long)StatData->stat_key[1]);
+			snprintf(valstr, sizeof(valstr),"%8llu-%1llu-%1llu",
 				(unsigned long long)StatData->stat_key[1] >> 4 ,
 				((unsigned long long)StatData->stat_key[1] & 0xF ) >> 1,
 				(unsigned long long)StatData->stat_key[1] & 1);
 			} break;
 	}
 
-	valstr[39] = 0;
+	valstr[sizeof(valstr)-1] = 0;
 
 	count_flows   = StatData->counter[FLOWS];
 	count_packets = packets_element(StatData, inout);
