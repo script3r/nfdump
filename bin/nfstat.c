@@ -1195,7 +1195,7 @@ struct tm	*tbuff;
 		} break;
 
 		case IS_STRING: {
-			snprintf(valstr, sizeof(valstr), "%llu", StatData->stat_key[1]);
+			snprintf(valstr, sizeof(valstr), "%llu", (unsigned long long)StatData->stat_key[1]);
 		} break;
 	}
 
