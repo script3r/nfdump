@@ -34,6 +34,7 @@ AM_CFLAGS = -ggdb
 
 # libnfdump sources
 output =  output_json.c output_json.h 
+murmur = murmur3.c murmur3.h
 common =  nf_common.c nf_common.h 
 util = util.c util.h
 filelzo = minilzo.c minilzo.h lzoconf.h lzodefs.h lz4.c lz4.h nffile.c nffile.h nfx.c nfx.h 
@@ -65,7 +66,7 @@ libnfdump_la_SOURCES = $(output) $(common) $(util) $(filelzo) $(nflist) $(filter
 libnfdump_la_LDFLAGS = -release 1.6.16
 
 
-nfdump_SOURCES = nfdump.c nfdump.h nfstat.c nfstat.h nfexport.c nfexport.h  \
+nfdump_SOURCES = nfdump.c nfdump.h $(murmur) nfstat.c nfstat.h nfexport.c nfexport.h  \
 	$(nflowcache) $(nfprof)
 nfdump_LDADD = -lnfdump
 nfdump_DEPENDENCIES = libnfdump.la

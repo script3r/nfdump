@@ -61,6 +61,7 @@
 #include "util.h"
 #include "nflowcache.h"
 #include "nfstat.h"
+#include "murmur3.h"
 
 extern int hash_hit;
 extern int hash_miss;
@@ -73,7 +74,7 @@ struct flow_element_s {
 	uint32_t	shift;		// number of bits to shift right to get final value
 };
 
-enum { IS_NUMBER = 1, IS_IPADDR, IS_MACADDR, IS_MPLS_LBL, IS_LATENCY, IS_EVENT, IS_HEX, IS_STRING};
+enum { IS_NUMBER = 1, IS_IPADDR, IS_MACADDR, IS_MPLS_LBL, IS_LATENCY, IS_EVENT, IS_HEX, IS_USERID};
 
 struct StatParameter_s {
 	char					*statname;		// name of -s option
@@ -287,7 +288,7 @@ struct StatParameter_s {
 
 	{ "userid",	 "  User ID",
 				{ {0, OffsetUserID, MaskUserID, 0}, {0,0,0,0} },
-					1, IS_STRING },
+					1, IS_USERID },
 #ifdef NSEL
 	{ "event", " Event",
 		{ {0, OffsetConnID, MaskFWevent, ShiftFWevent}, 		{0,0,0,0} },
@@ -1065,9 +1066,18 @@ int	j, i;
 			uint64_t mask	= StatParameters[stat].element[i].mask;
 			uint32_t shift	= StatParameters[stat].element[i].shift;
 
-			value[i][1] = (((uint64_t *)flow_record)[offset] & mask) >> shift;
-			offset = StatParameters[stat].element[i].offset0;
-			value[i][0] = offset ? ((uint64_t *)flow_record)[offset] : 0;
+			if(StatParameters[stat].type == IS_USERID) {
+				uint32_t hash;
+				MurmurHash3_x86_32(flow_record->userid, strlen(flow_record->userid), 42, &hash);
+				value[i][1] = hash;
+				value[i][0] = offset ? ((uint64_t *)flow_record)[offset] : 0;
+			} else {
+				value[i][1] = (((uint64_t *)flow_record)[offset] & mask) >> shift;
+						
+				offset = StatParameters[stat].element[i].offset0;
+				value[i][0] = offset ? ((uint64_t *)flow_record)[offset] : 0;
+			}
+
 
 			/*
 			 * make sure each flow is counted once only
@@ -1106,6 +1116,7 @@ int	j, i;
 				stat_record->msec_last			= flow_record->msec_last;
 				stat_record->record_flags		= flow_record->flags & 0x1;
 				stat_record->counter[FLOWS]		= flow_record->aggr_flows ? flow_record->aggr_flows : 1;
+				stat_record->userid			= strdup(flow_record->userid);
 			}
 		} // for the number of elements in this stat type
 	} // for every requested -s stat
@@ -1194,8 +1205,8 @@ struct tm	*tbuff;
 			snprintf(valstr, sizeof(valstr), "0x%llx", (unsigned long long)StatData->stat_key[1]);
 		} break;
 
-		case IS_STRING: {
-			snprintf(valstr, sizeof(valstr), "%llu", (unsigned long long)StatData->stat_key[1]);
+		case IS_USERID: {
+			snprintf(valstr, sizeof(valstr), "%lu -> %s", StatData->stat_key[1], StatData->userid);
 		} break;
 	}
 
@@ -1547,7 +1558,6 @@ char				*string;
 				flow_record->out_pkts 	= r->counter[OUTPACKETS];
 				flow_record->out_bytes 	= r->counter[OUTBYTES];
 				flow_record->aggr_flows = r->counter[FLOWS];
-
 				// apply IP mask from aggregation, to provide a pretty output
 				if ( FlowTable->has_masks ) {
 					flow_record->V6.srcaddr[0] &= FlowTable->IPmask[0];
@@ -1557,13 +1567,13 @@ char				*string;
 				}
 
 				if ( aggr_record_mask ) {
-					ApplyAggrMask(flow_record, aggr_record_mask);
+					//ApplyAggrMask(flow_record, aggr_record_mask);
 				}
-				if ( GuessDir && ( flow_record->srcport < flow_record->dstport ) )
+				if ( GuessDir && ( flow_record->srcport < flow_record->dstport ) ) 
 					SwapFlow(flow_record);
+
 				print_record((void *)flow_record, &string, tag);
 				printf("%s\n", string);
-
 				c++;
 				r = r->next;
 			}

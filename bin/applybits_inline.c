@@ -82,7 +82,9 @@ int i, max_offset;
 
 	max_offset = offsetof(master_record_t, map_ref) >> 3;
 	for (i=2; i<max_offset; i++) {
-		r[i] &= m[i];
+		if(i != OffsetUserID) {
+			r[i] &= m[i];
+		}
 	}
 
 } // End of ApplyAggrMask

@@ -52,6 +52,7 @@
 #include "nffile.h"
 #include "nfx.h"
 #include "nflowcache.h"
+#include "murmur3.h"
 
 #ifndef DEVEL
 #   define dbg_printf(...) /* printf(__VA_ARGS__) */
@@ -157,6 +158,7 @@ static struct aggregate_info_s {
 	{ "tos",		{ 1, OffsetTos, 		MaskTos, 	 ShiftTos },   		-1, 0, 	"%tos"	},
 	{ "srctos",		{ 1, OffsetTos, 		MaskTos, 	 ShiftTos },   		-1, 0,	"%stos"	},
 	{ "dsttos",		{ 1, OffsetDstTos, 		MaskDstTos,  ShiftDstTos },   	-1, 0,	"%dtos"	},
+	{ "userid",		{ 1, OffsetUserID, 		MaskMac,  ShiftIPv6},   	-1, 0,	"%userid"	},
 	{ NULL,			{ 0, 0, 0, 0}, 0, 0, NULL}
 };
 
@@ -394,7 +396,7 @@ uint32_t index = index_cache & FlowTable.IndexMask;
 	record->next 	 = NULL;
 	record->hash 	 = index_cache;
 	record->hash_key = flowkey;
-
+	
 	memcpy((void *)&record->flowrecord, (void *)raw_record, raw_record->size);
 	if ( FlowTable.bucket[index] == NULL ) 
 		FlowTable.bucket[index] = record;
@@ -495,6 +497,8 @@ uint32_t			index_cache;
 		FlowTableRecord->map_info_ref  	 	 = extension_info;
 		FlowTableRecord->exp_ref  	 		 = flow_record->exp_ref;
 
+		snprintf(FlowTableRecord->userid, sizeof(FlowTableRecord->userid), "%s", flow_record->userid);
+
 		// keymen got part of the cache
 		keymem = NULL;
 	} else {
@@ -547,6 +551,8 @@ uint32_t			index_cache;
 			FlowTableRecord->counter[FLOWS]   	 = flow_record->aggr_flows ? flow_record->aggr_flows : 1;
 			FlowTableRecord->map_info_ref  	 	 = extension_info;
 			FlowTableRecord->exp_ref  	 		 = flow_record->exp_ref;
+
+			snprintf(FlowTableRecord->userid, sizeof(FlowTableRecord->userid), "%s", flow_record->userid);
 
 			keymem = NULL;
 		}
@@ -859,7 +865,7 @@ master_record_t *aggr_record_mask;
 		aggr_record_mask->out_bytes  = 0xffffffffffffffffLL;
 		aggr_record_mask->aggr_flows = 0xffffffffffffffffLL;
 		aggr_record_mask->last    	= 0xffffffff;
-		
+
 		return aggr_record_mask;
 	} else {
 		return NULL;
@@ -880,7 +886,13 @@ Default_key_t *keyptr;
 		// custom user aggregation
 		aggregate_param_t *aggr_param = aggregate_stack;
 		while ( aggr_param->size ) {
-			uint64_t val = (record[aggr_param->offset] & aggr_param->mask) >> aggr_param->shift;
+			uint64_t val;
+
+			if(aggr_param->offset == OffsetUserID) {
+				MurmurHash3_x86_32(flow_record->userid, strlen(flow_record->userid), 42, &val);
+			} else {
+				val = (record[aggr_param->offset] & aggr_param->mask) >> aggr_param->shift;
+			}
 
 			switch ( aggr_param->size ) {
 				case 8: {

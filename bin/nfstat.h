@@ -77,6 +77,7 @@ typedef struct StatRecord {
 	// key 
 	uint8_t		prot;
 	uint64_t	stat_key[2];
+	char		*userid;
 } StatRecord_t;
 
 typedef struct hash_StatTable {

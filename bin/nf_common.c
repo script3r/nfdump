@@ -2960,7 +2960,6 @@ static void String_PortBlockSize(master_record_t *r, char *string) {
 #endif
 
 static void String_UserId(master_record_t *r, char *string) {
-
 	if ( r->userid[0] == '\0' )
 		snprintf(string, MAX_STRING_LENGTH-1 ,"%s", "<empty>");
 	else
