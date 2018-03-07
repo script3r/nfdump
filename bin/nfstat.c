@@ -1126,6 +1126,7 @@ int	j, i;
 				stat_record->counter[FLOWS]		= flow_record->aggr_flows ? flow_record->aggr_flows : 1;
 
 				strncpy(stat_record->userid, flow_record->userid, sizeof(stat_record->userid));
+				strncpy(stat_record->appid, flow_record->appid, sizeof(stat_record->appid));
 			}
 		} // for the number of elements in this stat type
 	} // for every requested -s stat
