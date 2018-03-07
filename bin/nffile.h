@@ -1198,7 +1198,7 @@ typedef struct tpl_ext_50_s {
         uint8_t         data[4];        // points to further data
 } tpl_ext_50_t;
 
-#define EX_PAN_APPID    52
+#define EX_PAN_APPID    51
 typedef struct tpl_ext_51_s {
         char            appid[32];
         uint8_t         data[4];        // points to further data

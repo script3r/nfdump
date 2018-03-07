@@ -1051,6 +1051,9 @@ size_t				size_required;
 			case EX_PAN_USERID:
 				PushSequence( table, NF9_PAN_USERID, &offset, NULL, 0);
 				break;
+			case EX_PAN_APPID:
+				PushSequence( table, NF9_PAN_APPID, &offset, NULL, 0);
+				break;
 			case EX_NEL_COMMON:
 				PushSequence( table, NF_N_NAT_EVENT, &offset, NULL, 0);
 				offset += 3;
