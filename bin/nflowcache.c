@@ -4,31 +4,31 @@
  *  Copyright (c) 2009, Peter Haag
  *  Copyright (c) 2004-2008, SWITCH - Teleinformatikdienste fuer Lehre und Forschung
  *  All rights reserved.
- *  
- *  Redistribution and use in source and binary forms, with or without 
+ *
+ *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions are met:
- *  
- *   * Redistributions of source code must retain the above copyright notice, 
+ *
+ *   * Redistributions of source code must retain the above copyright notice,
  *     this list of conditions and the following disclaimer.
- *   * Redistributions in binary form must reproduce the above copyright notice, 
- *     this list of conditions and the following disclaimer in the documentation 
+ *   * Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
  *     and/or other materials provided with the distribution.
- *   * Neither the name of the author nor the names of its contributors may be 
- *     used to endorse or promote products derived from this software without 
+ *   * Neither the name of the author nor the names of its contributors may be
+ *     used to endorse or promote products derived from this software without
  *     specific prior written permission.
- *  
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
- *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
- *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
- *  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE 
- *  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
- *  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
- *  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
- *  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
- *  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
- *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ *  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *  POSSIBILITY OF SUCH DAMAGE.
- *  
+ *
  */
 
 #include "config.h"
@@ -159,6 +159,7 @@ static struct aggregate_info_s {
 	{ "srctos",		{ 1, OffsetTos, 		MaskTos, 	 ShiftTos },   		-1, 0,	"%stos"	},
 	{ "dsttos",		{ 1, OffsetDstTos, 		MaskDstTos,  ShiftDstTos },   	-1, 0,	"%dtos"	},
 	{ "userid",		{ 1, OffsetUserID, 		MaskMac,  ShiftIPv6},   	-1, 0,	"%userid"	},
+	{ "appid",		{ 1, OffsetAppID, 		MaskMac,  ShiftIPv6},   	-1, 0,	"%appid"	},
 	{ NULL,			{ 0, 0, 0, 0}, 0, 0, NULL}
 };
 
@@ -186,7 +187,7 @@ enum CNT_IND { FLOWS = 0, INPACKETS, INBYTES, OUTPACKETS, OUTBYTES };
 static inline int TimeMsec_CMP(time_t t1, uint16_t offset1, time_t t2, uint16_t offset2 ) {
 	if ( t1 > t2 )
 		return 1;
-	if ( t2 > t1 ) 
+	if ( t2 > t1 )
 		return 2;
 	// else t1 == t2 - offset is now relevant
 	if ( offset1 > offset2 )
@@ -213,7 +214,7 @@ static int MemoryHandle_init(MemoryHandle_t *handle) {
 	handle->NumBlocks	= 1;
 	handle->CurrentBlock = 0;
 	handle->Allocted 	 = 0;
-	
+
 	return 1;
 
 } // End of  MemoryHandle_init
@@ -254,7 +255,7 @@ uint32_t	aligned_size;
 				fprintf(stderr, "realloc() error in %s line %d: %s\n", __FILE__, __LINE__, strerror (errno));
 				exit(255);
 			}
-		} 
+		}
 
 		// allocate new memblock
 		p = malloc(MemBlockSize);
@@ -266,7 +267,7 @@ uint32_t	aligned_size;
 		// reset counter for new memblock
 		handle->Allocted = 0;
 		handle->NumBlocks++;
-	} 
+	}
 
 	// enough space available in current memblock
 	p = handle->memblock[handle->CurrentBlock] + handle->Allocted;
@@ -296,7 +297,7 @@ uint32_t maxindex;
 
 	FlowTable.keysize = aggregate_key_len;
 
-	// keylen = number of uint64_t 
+	// keylen = number of uint64_t
  	FlowTable.keylen  = aggregate_key_len >> 3;	// aggregate_key_len / 8
 	if ( (aggregate_key_len & 0x7 ) != 0 )
 		FlowTable.keylen++;
@@ -304,7 +305,7 @@ uint32_t maxindex;
 	dbg_printf("FlowTable.keysize %i bytes\n", FlowTable.keysize);
 	dbg_printf("FlowTable.keylen %i uint64_t\n", FlowTable.keylen);
 
-	if ( !MemoryHandle_init(&FlowTable.mem) ) 
+	if ( !MemoryHandle_init(&FlowTable.mem) )
 		return 0;
 
 	initialised = 1;
@@ -355,7 +356,7 @@ FlowTableRecord_t	*record;
 		uint64_t	*k1 = (uint64_t *)flowkey;
 		uint64_t	*k2 = (uint64_t *)record->hash_key;
 		int i;
-		
+
 		// compare key and break as soon as keys do not match
 		i = 0;
 		while ( i < FlowTable.keylen ) {
@@ -368,7 +369,7 @@ FlowTableRecord_t	*record;
 
 		if ( i == FlowTable.keylen ) {
 			// hit - record found
-		
+
 			// some stats for debugging
 			if ( bsize == 0 )
 				hash_hit++;
@@ -396,11 +397,11 @@ uint32_t index = index_cache & FlowTable.IndexMask;
 	record->next 	 = NULL;
 	record->hash 	 = index_cache;
 	record->hash_key = flowkey;
-	
+
 	memcpy((void *)&record->flowrecord, (void *)raw_record, raw_record->size);
-	if ( FlowTable.bucket[index] == NULL ) 
+	if ( FlowTable.bucket[index] == NULL )
 		FlowTable.bucket[index] = record;
-	else 
+	else
 		FlowTable.bucketcache[index]->next = record;
 
 	FlowTable.bucketcache[index] = record;
@@ -422,13 +423,13 @@ FlowTableRecord_t	*record;
 	record->hash_key = NULL;
 
 	memcpy((void *)&record->flowrecord, (void *)raw_record, raw_record->size);
-	if ( FlowTable.bucket[0] == NULL ) 
+	if ( FlowTable.bucket[0] == NULL )
 		FlowTable.bucket[0] = record;
-	else 
+	else
 		FlowTable.bucketcache[0]->next = record;
 
 	FlowTable.bucketcache[0] = record;
-	
+
 	// safe the extension map and exporter reference
 	record->map_info_ref = extension_info;
 	record->exp_ref = flow_record->exp_ref;
@@ -447,7 +448,7 @@ FlowTableRecord_t	*record;
 void AddFlow(common_record_t *raw_record, master_record_t *flow_record, extension_info_t *extension_info ) {
 static void			*keymem = NULL, *bidirkeymem = NULL;
 FlowTableRecord_t	*FlowTableRecord;
-uint32_t			index_cache; 
+uint32_t			index_cache;
 
 	if ( keymem == NULL ) {
 		keymem = MemoryHandle_get(&FlowTable.mem ,FlowTable.keysize );
@@ -470,12 +471,12 @@ uint32_t			index_cache;
 		FlowTableRecord->counter[OUTBYTES]   += flow_record->out_bytes;
 		FlowTableRecord->counter[OUTPACKETS] += flow_record->out_pkts;
 
-		if ( TimeMsec_CMP(flow_record->first, flow_record->msec_first, 
+		if ( TimeMsec_CMP(flow_record->first, flow_record->msec_first,
 				FlowTableRecord->flowrecord.first, FlowTableRecord->flowrecord.msec_first) == 2) {
 			FlowTableRecord->flowrecord.first = flow_record->first;
 			FlowTableRecord->flowrecord.msec_first = flow_record->msec_first;
 		}
-		if ( TimeMsec_CMP(flow_record->last, flow_record->msec_last, 
+		if ( TimeMsec_CMP(flow_record->last, flow_record->msec_last,
 				FlowTableRecord->flowrecord.last, FlowTableRecord->flowrecord.msec_last) == 1) {
 			FlowTableRecord->flowrecord.last = flow_record->last;
 			FlowTableRecord->flowrecord.msec_last = flow_record->msec_last;
@@ -498,15 +499,16 @@ uint32_t			index_cache;
 		FlowTableRecord->exp_ref  	 		 = flow_record->exp_ref;
 
 		snprintf(FlowTableRecord->userid, sizeof(FlowTableRecord->userid), "%s", flow_record->userid);
+		snprintf(FlowTableRecord->appid, sizeof(FlowTableRecord->appid), "%s", flow_record->appid);
 
 		// keymen got part of the cache
 		keymem = NULL;
 	} else {
 		// for bidir flows do
-		uint32_t	bidir_index_cache; 
+		uint32_t	bidir_index_cache;
 
 		// use tmp memory for bidir hash key to search for bidir flow
-		// we need it only to lookup 
+		// we need it only to lookup
 		if ( bidirkeymem == NULL ) {
 			bidirkeymem = MemoryHandle_get(&FlowTable.mem ,FlowTable.keysize );
 			// the last aligned word may not be fully used. set it to 0 to guarantee
@@ -526,24 +528,24 @@ uint32_t			index_cache;
 			FlowTableRecord->counter[INBYTES]    += flow_record->out_bytes;
 			FlowTableRecord->counter[INPACKETS]  += flow_record->out_pkts;
 
-			if ( TimeMsec_CMP(flow_record->first, flow_record->msec_first, 
+			if ( TimeMsec_CMP(flow_record->first, flow_record->msec_first,
 					FlowTableRecord->flowrecord.first, FlowTableRecord->flowrecord.msec_first) == 2) {
 				FlowTableRecord->flowrecord.first = flow_record->first;
 				FlowTableRecord->flowrecord.msec_first = flow_record->msec_first;
 			}
-			if ( TimeMsec_CMP(flow_record->last, flow_record->msec_last, 
+			if ( TimeMsec_CMP(flow_record->last, flow_record->msec_last,
 				FlowTableRecord->flowrecord.last, FlowTableRecord->flowrecord.msec_last) == 1) {
 				FlowTableRecord->flowrecord.last = flow_record->last;
 				FlowTableRecord->flowrecord.msec_last = flow_record->msec_last;
 			}
-	
+
 			FlowTableRecord->counter[FLOWS]        += flow_record->aggr_flows ? flow_record->aggr_flows : 1;
 			FlowTableRecord->flowrecord.tcp_flags  |= flow_record->tcp_flags;
 		} else {
-			// no bidir flow found 
+			// no bidir flow found
 			// insert original flow into the cache
 			FlowTableRecord = hash_insert_FlowTable(index_cache, keymem, raw_record);
-	
+
 			FlowTableRecord->counter[INBYTES]	 = flow_record->dOctets;
 			FlowTableRecord->counter[INPACKETS]  = flow_record->dPkts;
 			FlowTableRecord->counter[OUTBYTES]   = flow_record->out_bytes;
@@ -553,11 +555,12 @@ uint32_t			index_cache;
 			FlowTableRecord->exp_ref  	 		 = flow_record->exp_ref;
 
 			snprintf(FlowTableRecord->userid, sizeof(FlowTableRecord->userid), "%s", flow_record->userid);
+			snprintf(FlowTableRecord->appid, sizeof(FlowTableRecord->appid), "%s", flow_record->appid);
 
 			keymem = NULL;
 		}
 
-	} 
+	}
 
 } // End of AddFlow
 
@@ -619,7 +622,7 @@ int rem;
 }
 
 int SetBidirAggregation(void) {
-	
+
 	if ( aggregate_stack ) {
 		fprintf(stderr, "Can not set bidir mode while custom aggregation is set.\n");
 		return 0;
@@ -760,7 +763,7 @@ struct aggregate_info_s *a;
 						return 0;
 					}
 				} else {
-					if ( has_mask ) { 
+					if ( has_mask ) {
 						fprintf(stderr, "'%s' No subnet bits allowed here!\n", p);
 						return 0;
 					}
@@ -783,7 +786,7 @@ struct aggregate_info_s *a;
 						FlowTable.IPmask[3] = mask[1];
 						break;
 				}
-			} 
+			}
 		} else {
 			fprintf(stderr, "Unknown aggregation specifier '%s'\n", p);
 			return 0;
@@ -819,11 +822,11 @@ struct aggregate_info_s *a;
 		aggregate_param_t *aggr_param = aggregate_stack;
 		printf("Aggregate stack:\n");
 		while ( aggr_param->size ) {
-			printf("Offset: %u, Mask: %llx, Shift: %llu\n", aggr_param->offset, 
+			printf("Offset: %u, Mask: %llx, Shift: %llu\n", aggr_param->offset,
 				(long long unsigned)aggr_param->mask,  (long long unsigned)aggr_param->shift);
 			aggr_param++;
-		} // while 
-	} 
+		} // while
+	}
 	printf("Has IP mask: %i %i\n", has_mask, FlowTable.has_masks);
 	printf("Mask 0: 0x%llx\n", (unsigned long long)FlowTable.IPmask[0]);
 	printf("Mask 1: 0x%llx\n", (unsigned long long)FlowTable.IPmask[1]);
@@ -890,6 +893,8 @@ Default_key_t *keyptr;
 
 			if(aggr_param->offset == OffsetUserID) {
 				MurmurHash3_x86_32(flow_record->userid, strlen(flow_record->userid), 42, &val);
+			} else if(aggr_param->offset == OffsetAppID) {
+				MurmurHash3_x86_32(flow_record->appid, strlen(flow_record->appid), 42, &val);
 			} else {
 				val = (record[aggr_param->offset] & aggr_param->mask) >> aggr_param->shift;
 			}
@@ -920,7 +925,7 @@ Default_key_t *keyptr;
 					exit(255);
 			} // switch
 			aggr_param++;
-		} // while 
+		} // while
 	} else if ( swap_flow ) {
 		// default 5-tuple aggregation for bidirectional flows
 		keyptr = (Default_key_t *)keymem;
@@ -942,6 +947,5 @@ Default_key_t *keyptr;
 		keyptr->dstport		= flow_record->dstport;
 		keyptr->proto		= flow_record->prot;
 	}
-	
-} // End of New_Hash_Key
 
+} // End of New_Hash_Key
