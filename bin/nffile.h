@@ -1198,6 +1198,12 @@ typedef struct tpl_ext_50_s {
         uint8_t         data[4];        // points to further data
 } tpl_ext_50_t;
 
+#define EX_PAN_APPID    52
+typedef struct tpl_ext_51_s {
+        char            appid[32];
+        uint8_t         data[4];        // points to further data
+} tpl_ext_51_t;
+
 /*
  *
  *
@@ -2092,6 +2098,11 @@ typedef struct master_record_s {
 #define MaskUserID 0xFFFFFFFFFFFFFFFFLL
 
 	char userid[64];
+
+#define OffsetAppID (offsetof(master_record_t, appid) >> 3)
+#define MaskAppID 0xFFFFFFFFFFFFFFFFLL
+
+		char appid[32];
 
 #ifdef USER_EXTENSION_1
 	uint64_t	u64_1;

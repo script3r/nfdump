@@ -118,6 +118,7 @@ typedef struct sequence_map_s {
 #define zero96			26
 #define zero128			27
 #define move_userid_64 28
+#define move_appid_32 29
 
 
 	uint32_t	id;				// sequence ID as defined above
@@ -356,6 +357,7 @@ static struct v9_element_map_s {
 	{ NF9_NPROBE_APPL_LATENCY_SEC, 	 	 "NPROBE appl lat sec",		_4bytes, _8bytes, move_slatency, nop, EX_LATENCY },
 
 	{ NF9_PAN_USERID, 			 "PAN user id 64",		_64bytes,  _64bytes, move_userid_64, zero32, EX_PAN_USERID },
+	{ NF9_PAN_APPID, 			 "PAN app id 32",		_32bytes,  _32bytes, move_appid_32, zero32, EX_PAN_APPID },
 
 	{0, "NULL",	0, 0}
 };

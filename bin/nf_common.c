@@ -239,6 +239,9 @@ static void String_ExpSysID(master_record_t *r, char *string);
 
 static void String_UserId(master_record_t *r, char *string);
 
+static void String_AppID(master_record_t *r, char *string);
+
+
 #ifdef NSEL
 static void String_EventTime(master_record_t *r, char *string);
 
@@ -400,6 +403,7 @@ static struct format_token_list_s {
 	{ "%al", 0, "A latency", 			 	String_AppLatency },	// app latency
 
 	{ "%userid", 0, "User-ID", 		String_UserId },			// Flow Label
+	{ "%appid", 0, "App-ID", 		String_AppID },			// Flow Label
 
 
 	{ NULL, 0, NULL, NULL }
@@ -2967,4 +2971,14 @@ static void String_UserId(master_record_t *r, char *string) {
 
 	string[MAX_STRING_LENGTH-1] = '\0';
 
-} // End of String_userName
+}
+
+static void String_AppID(master_record_t *r, char *string) {
+	if ( r->userid[0] == '\0' )
+		snprintf(string, MAX_STRING_LENGTH-1 ,"%s", "<empty>");
+	else
+		snprintf(string, MAX_STRING_LENGTH-1 ,"%s", r->appid);
+
+	string[MAX_STRING_LENGTH-1] = '\0';
+
+}

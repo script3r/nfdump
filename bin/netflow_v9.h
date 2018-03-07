@@ -170,6 +170,7 @@ typedef struct common_header_s {
 #define _16bytes  16
 #define _20bytes  20
 #define _24bytes  24
+#define _32bytes  32
 #define _64bytes  64
 #define _65bytes  65
 #define _72bytes  72
@@ -309,6 +310,7 @@ typedef struct common_header_s {
 #define NF9_NPROBE_APPL_LATENCY_USEC	57559
 
 #define NF9_PAN_USERID 56702
+#define NF9_PAN_APPID 56701
 
 /* prototypes */
 int Init_v9(void);

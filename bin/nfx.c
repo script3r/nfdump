@@ -134,6 +134,7 @@ extension_descriptor_t extension_descriptor[] = {
 	{ EX_NEL_RESERVED_1,	0,	0, 0,		NULL},
 
 	{ EX_PAN_USERID,                  64,     65, 0,          "Palo Alto User-ID"},
+	{ EX_PAN_APPID,                  32,     66, 0,          "Palo Alto App-ID"},
 
 	// last entry
 	{ 0,	0,	0, 0,	NULL }

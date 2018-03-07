@@ -74,7 +74,7 @@ struct flow_element_s {
 	uint32_t	shift;		// number of bits to shift right to get final value
 };
 
-enum { IS_NUMBER = 1, IS_IPADDR, IS_MACADDR, IS_MPLS_LBL, IS_LATENCY, IS_EVENT, IS_HEX, IS_USERID};
+enum { IS_NUMBER = 1, IS_IPADDR, IS_MACADDR, IS_MPLS_LBL, IS_LATENCY, IS_EVENT, IS_HEX, IS_USERID, IS_APPID};
 
 struct StatParameter_s {
 	char					*statname;		// name of -s option
@@ -289,6 +289,9 @@ struct StatParameter_s {
 	{ "userid",	 "  User ID",
 				{ {0, OffsetUserID, MaskUserID, 0}, {0,0,0,0} },
 					1, IS_USERID },
+	{ "appid",	 "  App ID",
+				{ {0, OffsetAppID, MaskAppID, 0}, {0,0,0,0} },
+					1, IS_APPID },
 #ifdef NSEL
 	{ "event", " Event",
 		{ {0, OffsetConnID, MaskFWevent, ShiftFWevent}, 		{0,0,0,0} },
@@ -1071,9 +1074,14 @@ int	j, i;
 				MurmurHash3_x86_32(flow_record->userid, strlen(flow_record->userid), 42, &hash);
 				value[i][1] = hash;
 				value[i][0] = offset ? ((uint64_t *)flow_record)[offset] : 0;
-			} else {
+			} else if(StatParameters[stat].type == IS_APPID) {
+				uint32_t hash;
+				MurmurHash3_x86_32(flow_record->appid, strlen(flow_record->appid), 42, &hash);
+				value[i][1] = hash;
+				value[i][0] = offset ? ((uint64_t *)flow_record)[offset] : 0;
+			}  else {
 				value[i][1] = (((uint64_t *)flow_record)[offset] & mask) >> shift;
-						
+
 				offset = StatParameters[stat].element[i].offset0;
 				value[i][0] = offset ? ((uint64_t *)flow_record)[offset] : 0;
 			}
@@ -1116,7 +1124,8 @@ int	j, i;
 				stat_record->msec_last			= flow_record->msec_last;
 				stat_record->record_flags		= flow_record->flags & 0x1;
 				stat_record->counter[FLOWS]		= flow_record->aggr_flows ? flow_record->aggr_flows : 1;
-				stat_record->userid			= strdup(flow_record->userid);
+
+				strncpy(stat_record->userid, flow_record->userid, sizeof(stat_record->userid));
 			}
 		} // for the number of elements in this stat type
 	} // for every requested -s stat
@@ -1206,7 +1215,11 @@ struct tm	*tbuff;
 		} break;
 
 		case IS_USERID: {
-			snprintf(valstr, sizeof(valstr), "%lu -> %s", StatData->stat_key[1], StatData->userid);
+			snprintf(valstr, sizeof(valstr), "%s", StatData->userid);
+		} break;
+
+		case IS_APPID: {
+			snprintf(valstr, sizeof(valstr), "%s", StatData->appid);
 		} break;
 	}
 
@@ -1569,7 +1582,7 @@ char				*string;
 				if ( aggr_record_mask ) {
 					//ApplyAggrMask(flow_record, aggr_record_mask);
 				}
-				if ( GuessDir && ( flow_record->srcport < flow_record->dstport ) ) 
+				if ( GuessDir && ( flow_record->srcport < flow_record->dstport ) )
 					SwapFlow(flow_record);
 
 				print_record((void *)flow_record, &string, tag);
