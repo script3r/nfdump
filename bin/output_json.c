@@ -1,31 +1,31 @@
 /*
  *  Copyright (c) 2017, Peter Haag
  *  All rights reserved.
- *  
- *  Redistribution and use in source and binary forms, with or without 
+ *
+ *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions are met:
- *  
- *   * Redistributions of source code must retain the above copyright notice, 
+ *
+ *   * Redistributions of source code must retain the above copyright notice,
  *     this list of conditions and the following disclaimer.
- *   * Redistributions in binary form must reproduce the above copyright notice, 
- *     this list of conditions and the following disclaimer in the documentation 
+ *   * Redistributions in binary form must reproduce the above copyright notice,
+ *     this list of conditions and the following disclaimer in the documentation
  *     and/or other materials provided with the distribution.
- *   * Neither the name of the author nor the names of its contributors may be 
- *     used to endorse or promote products derived from this software without 
+ *   * Neither the name of the author nor the names of its contributors may be
+ *     used to endorse or promote products derived from this software without
  *     specific prior written permission.
- *  
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
- *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
- *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
- *  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE 
- *  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
- *  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
- *  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
- *  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
- *  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
- *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ *  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ *  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ *  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ *  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ *  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *  POSSIBILITY OF SUCH DAMAGE.
- *  
+ *
  */
 
 #include "config.h"
@@ -116,8 +116,8 @@ extension_map_t	*extension_map = r->map_ref;
 "	\"t_first\" : \"%s\",\n"
 "	\"t_last\" : \"%s\",\n"
 "	\"proto\" : %u,\n"
-, TestFlag(r->flags, FLAG_EVENT) ? "EVENT" : "FLOW", 
-	TestFlag(r->flags, FLAG_SAMPLED) ? 1 : 0, 
+, TestFlag(r->flags, FLAG_EVENT) ? "EVENT" : "FLOW",
+	TestFlag(r->flags, FLAG_SAMPLED) ? 1 : 0,
 	r->exporter_sysid, datestr1, datestr2, r->prot);
 
 	free(datestr1);
@@ -141,7 +141,7 @@ extension_map_t	*extension_map = r->map_ref;
 		as[IP_STRING_LEN-1] = 0;
 		ds[IP_STRING_LEN-1] = 0;
 
-		snprintf(_s, slen-1, 
+		snprintf(_s, slen-1,
 "	\"src6_addr\" : \"%s\",\n"
 "	\"dst6_addr\" : \"%s\",\n"
 , as, ds );
@@ -154,7 +154,7 @@ extension_map_t	*extension_map = r->map_ref;
 		as[IP_STRING_LEN-1] = 0;
 		ds[IP_STRING_LEN-1] = 0;
 
-		snprintf(_s, slen-1, 
+		snprintf(_s, slen-1,
 "	\"src4_addr\" : \"%s\",\n"
 "	\"dst4_addr\" : \"%s\",\n"
 , as, ds );
@@ -192,7 +192,7 @@ extension_map_t	*extension_map = r->map_ref;
 	_slen = strlen(data_string);
 	_s = data_string + _slen;
 	slen = STRINGSIZE - _slen;
-	
+
 	i = 0;
 	while ( (id = extension_map->ex_id[i]) != 0 ) {
 		if ( slen <= 20 ) {
@@ -328,7 +328,7 @@ extension_map_t	*extension_map = r->map_ref;
 				snprintf(_s, slen-1,
 "	\"in_dst_mac\" : \"%.2x:%.2x:%.2x:%.2x:%.2x:%.2x\",\n"
 "	\"out_src_mac\" : \"%.2x:%.2x:%.2x:%.2x:%.2x:%.2x\",\n"
-, mac1[5], mac1[4], mac1[3], mac1[2], mac1[1], mac1[0], 
+, mac1[5], mac1[4], mac1[3], mac1[2], mac1[1], mac1[0],
   mac2[5], mac2[4], mac2[3], mac2[2], mac2[1], mac2[0] );
 			} break;
 			case EX_MPLS: {
@@ -393,13 +393,26 @@ extension_map_t	*extension_map = r->map_ref;
 , datestr);
 				free(datestr);
 				} break;
+
+				case EX_PAN_APPID:
+					snprintf(_s, slen-1,
+	"	\"appid\" : \"%s\",\n"
+	, r->appid[0] ? r->appid : "<empty>");
+					break;
+
+				case EX_PAN_USERID:
+					snprintf(_s, slen-1,
+	"	\"userid\" : \"%s\",\n"
+	, r->userid[0] ? r->userid : "<empty>");
+					break;
+
 #ifdef NSEL
 			case EX_NSEL_COMMON: {
 				char *event = "UNKNOWN";
 				char *datestr, datebuff[64];
 				if ( r->event <= 5 ) {
 					event = NSEL_event_string[r->event];
-				} 
+				}
 				when = r->event_time / 1000LL;
 				ts = localtime(&when);
 				strftime(datebuff, 63, "%Y-%m-%dT%H:%M:%S", ts);
@@ -477,7 +490,7 @@ extension_map_t	*extension_map = r->map_ref;
 				snprintf(_s, slen-1,
 "	\"ingress_acl\" : \"0x%x/0x%x/0x%x\",\n"
 "	\"egress_acl\" : \"0x%x/0x%x/0x%x\",\n"
-, r->ingress_acl_id[0], r->ingress_acl_id[1], r->ingress_acl_id[2], 
+, r->ingress_acl_id[0], r->ingress_acl_id[1], r->ingress_acl_id[2],
   r->egress_acl_id[0], r->egress_acl_id[1], r->egress_acl_id[2]);
 				break;
 			case EX_NSEL_USER:
@@ -496,7 +509,7 @@ extension_map_t	*extension_map = r->map_ref;
 
 
 	// add label and close json object
-	snprintf(_s, slen-1, 
+	snprintf(_s, slen-1,
 "	\"label\" : \"%s\"\n"
 "}\n", r->label ? r->label : "<none>");
 

@@ -734,6 +734,19 @@ int		i;
 				tpl->received = master_record->received;
 				p = (void *)tpl->data;
 				} break;
+
+				case EX_PAN_USERID: {
+					tpl_ext_50_t *tpl = (tpl_ext_50_t *)p;
+					strncpy((void *)master_record->userid, (void *)tpl->userid, sizeof(master_record->userid));
+					master_record->userid[sizeof(master_record->userid)-1] = '\0';
+					p = (void *)tpl->data;
+				} break;
+				case EX_PAN_APPID: {
+					tpl_ext_51_t *tpl = (tpl_ext_51_t *)p;
+					strncpy((void *)master_record->appid, (void *)tpl->appid, sizeof(master_record->appid));
+					master_record->appid[sizeof(master_record->appid)-1] = '\0';
+					p = (void *)tpl->data;
+				} break;
 #ifdef NSEL
 			case EX_NSEL_COMMON: {
 				tpl_ext_37_t *tpl = (tpl_ext_37_t *)p;
