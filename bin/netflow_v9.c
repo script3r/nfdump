@@ -1758,6 +1758,10 @@ char				*string;
 					memcpy((void *)&out[output_offset],(void *)&in[input_offset],64);
 					out[output_offset+64] = 0;	// trailing 0 for string
 					break;
+				case move_appid_32:
+					memcpy((void *)&out[output_offset],(void *)&in[input_offset],32);
+					out[output_offset+32] = 0;	// trailing 0 for string
+					break;
 
 				case TimeMsec:
 					{ uint64_t DateMiliseconds = Get_val64((void *)&in[input_offset]);
