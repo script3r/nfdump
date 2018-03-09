@@ -1101,7 +1101,7 @@ extension_map_t	*extension_map = r->map_ref;
 				slen = STRINGSIZE - _slen;
 				break;
 
-			case EX_PAN_USERID:
+		case EX_PAN_USERID:
 				snprintf(_s, slen-1,
 	"  User ID    = %s\n"
 	, r->userid[0] ? r->userid : "          <empty>");
@@ -1112,7 +1112,6 @@ extension_map_t	*extension_map = r->map_ref;
 	break;
 
 	case EX_PAN_APPID:
-		printf("%s %s", r->appid, r->appid);
 		snprintf(_s, slen-1,
 "  App ID    = %s\n"
 , r->appid[0] ? r->appid : "          <empty>");
@@ -2985,7 +2984,7 @@ static void String_UserId(master_record_t *r, char *string) {
 }
 
 static void String_AppID(master_record_t *r, char *string) {
-	if ( r->userid[0] == '\0' )
+	if ( r->appid[0] == '\0' )
 		snprintf(string, MAX_STRING_LENGTH-1 ,"%s", "<empty>");
 	else
 		snprintf(string, MAX_STRING_LENGTH-1 ,"%s", r->appid);
