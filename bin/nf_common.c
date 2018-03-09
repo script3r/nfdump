@@ -1112,6 +1112,7 @@ extension_map_t	*extension_map = r->map_ref;
 	break;
 
 	case EX_PAN_APPID:
+		printf("%s %s", r->appid, r->appid);
 		snprintf(_s, slen-1,
 "  App ID    = %s\n"
 , r->appid[0] ? r->appid : "          <empty>");

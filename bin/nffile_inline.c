@@ -734,7 +734,6 @@ int		i;
 				tpl->received = master_record->received;
 				p = (void *)tpl->data;
 				} break;
-
 				case EX_PAN_USERID: {
 					tpl_ext_50_t *tpl = (tpl_ext_50_t *)p;
 					strncpy((void *)master_record->userid, (void *)tpl->userid, sizeof(master_record->userid));

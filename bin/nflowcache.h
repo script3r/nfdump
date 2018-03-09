@@ -64,7 +64,7 @@ typedef struct FlowTableRecord {
 	// flow counter parameters for FLOWS, INPACKETS, INBYTES, OUTPACKETS, OUTBYTES
 	uint64_t	counter[5];
 	char 		userid[64];
-	char 		appid[64];
+	char 		appid[32];
 
 	extension_info_t	   *map_info_ref;
 	exporter_info_record_t *exp_ref;
